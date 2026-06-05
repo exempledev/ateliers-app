@@ -33,7 +33,7 @@ export default function HomePage() {
               <motion.div variants={fadeUp}>
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-sm font-medium mb-6">
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] animate-pulse" />
-                  2 ateliers par semaine · 100% gratuit
+                  2 ateliers par semaine
                 </span>
               </motion.div>
 
@@ -76,11 +76,10 @@ export default function HomePage() {
         {/* Stats */}
         <section className="border-y border-[var(--border)] bg-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-            <div className="grid grid-cols-3 divide-x divide-[var(--border)]">
+            <div className="flex justify-center divide-x divide-[var(--border)]">
               {[
                 { value: '2', label: 'ateliers par semaine' },
                 { value: '15–20', label: 'places par atelier' },
-                { value: '100%', label: 'gratuit' },
               ].map(({ value, label }) => (
                 <div key={label} className="text-center px-4 py-2">
                   <p className="text-2xl font-bold text-[var(--primary)]">{value}</p>
@@ -151,7 +150,7 @@ export default function HomePage() {
                   step: '1',
                   icon: <Users className="w-5 h-5" />,
                   title: 'Créez votre compte',
-                  desc: 'Inscrivez-vous en 30 secondes. Aucun paiement requis, c\'est gratuit.',
+                  desc: 'Inscrivez-vous en 30 secondes.',
                 },
                 {
                   step: '2',
@@ -196,7 +195,7 @@ export default function HomePage() {
               href="/inscription"
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-white text-[var(--primary)] font-semibold hover:opacity-95 transition-opacity"
             >
-              Commencer gratuitement
+              Commencer
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -206,12 +205,10 @@ export default function HomePage() {
         <footer className="border-t border-[var(--border)] py-8">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-[var(--primary)] flex items-center justify-center">
-                <span className="text-white text-xs font-bold">A</span>
-              </div>
-              <span className="text-sm font-medium text-[var(--foreground)]">Ateliers & Co</span>
+              <img src="/favicon.ico" alt="Logo" className="w-6 h-6 rounded-lg object-cover" />
+              <span className="text-sm font-medium text-[var(--foreground)]">Les Ateliers d'Émergence</span>
             </div>
-            <p className="text-xs text-[var(--muted)]">© 2025 Ateliers & Co · Tous droits réservés.</p>
+            <p className="text-xs text-[var(--muted)]">© 2025 Les Ateliers d'Émergence · Tous droits réservés.</p>
           </div>
         </footer>
 

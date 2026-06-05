@@ -113,7 +113,7 @@ export default function AdminContent({ animateurs, participants, collaborateurs 
       {/* Participants */}
       <Card className="p-5 mt-6">
         <h2 className="font-semibold text-[var(--foreground)] mb-4">
-          Utilisateurs de la plateforme ({participants.length})
+          Inscrits ({participants.length})
         </h2>
         <div className="flex flex-col gap-1">
           {participants.length === 0 ? (
@@ -170,7 +170,7 @@ function RoleSelect({
       onChange={handleChange}
       className="text-xs px-2 py-1 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[var(--primary)] transition"
     >
-      <option value="participant">Participant</option>
+      <option value="participant">Inscrit</option>
       <option value="collaborateur">Collaborateur</option>
       <option value="animateur">Animateur</option>
     </select>

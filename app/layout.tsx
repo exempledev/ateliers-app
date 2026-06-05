@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Ateliers & Co',
+  title: "Les Ateliers d'Émergence",
   description: 'Réservez vos ateliers travail & détente',
   icons: {
     icon: '/icon.png',

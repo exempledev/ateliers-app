@@ -82,10 +82,8 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-[var(--border)]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-[var(--primary)] flex items-center justify-center">
-            <span className="text-white text-sm font-bold">A</span>
-          </div>
-          <span className="font-semibold text-[var(--foreground)]">Ateliers & Co</span>
+          <img src="/favicon.ico" alt="Logo" className="w-8 h-8 rounded-xl object-cover" />
+          <span className="font-semibold text-[var(--foreground)]">Les Ateliers d'Émergence</span>
         </Link>
 
         <nav className="flex items-center gap-1">
