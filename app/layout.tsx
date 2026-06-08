@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import './globals.css'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: "Les Ateliers d'Émergence",
   description: 'Réservez vos ateliers travail & détente',
