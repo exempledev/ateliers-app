@@ -19,6 +19,11 @@ export default async function ActualitesPage() {
 
   const isAdmin = profile?.role === 'admin'
 
+  const typedPosts = (posts ?? []).map(post => ({
+    ...post,
+    users: Array.isArray(post.users) ? (post.users[0] ?? null) : post.users
+  }))
+
   return (
     <>
       <Navbar />
@@ -27,7 +32,7 @@ export default async function ActualitesPage() {
           <h1 className="text-3xl font-bold text-[var(--foreground)]">Actualités</h1>
           <p className="text-[var(--muted)] mt-1">Les dernières nouvelles de l'espace</p>
         </div>
-        <ActualitesContent posts={posts ?? []} isAdmin={isAdmin} />
+        <ActualitesContent posts={typedPosts} isAdmin={isAdmin} />
       </main>
     </>
   )
