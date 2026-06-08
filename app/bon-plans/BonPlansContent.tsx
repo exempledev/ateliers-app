@@ -3,18 +3,27 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, X, Tag, Trash2, Send, ImagePlus } from 'lucide-react'
+import { Plus, X, Tag, Trash2, Send, ImagePlus, User, Pencil } from 'lucide-react'
+import ImageLightbox from '@/components/ui/ImageLightbox'
 import { formatDistanceToNow, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
+
+interface PostUser {
+  full_name: string
+  avatar_url?: string | null
+  role?: string | null
+  organisme?: string | null
+}
 
 interface Post {
   id: string
   title: string
   content: string
   image_url: string | null
+  anonymous: boolean
   created_at: string
   author_id: string
-  users: { full_name: string } | null
+  users: PostUser | null
 }
 
 interface Props {
@@ -23,39 +32,81 @@ interface Props {
   userId: string | null
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  admin: 'Administrateur',
+  animateur: 'Animateur',
+  collaborateur: 'Collaborateur',
+  participant: 'Inscrit',
+}
+
 export default function BonPlansContent({ posts, role, userId }: Props) {
   const canPost = role === 'admin' || role === 'animateur'
-  const canDelete = (authorId: string) =>
-    role === 'admin' || (canPost && userId === authorId)
+  const canEdit  = (authorId: string) => role === 'admin' || (canPost && userId === authorId)
+  const canDelete = (authorId: string) => role === 'admin' || (canPost && userId === authorId)
 
-  const [showForm, setShowForm] = useState(false)
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [showForm, setShowForm]         = useState(false)
+  const [editingId, setEditingId]       = useState<string | null>(null)
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)
+  const [title, setTitle]               = useState('')
+  const [content, setContent]           = useState('')
+  const [anonymous, setAnonymous]       = useState(false)
+  const [imageFile, setImageFile]       = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [loading, setLoading]           = useState(false)
+  const [error, setError]               = useState('')
+  const [profilePost, setProfilePost]   = useState<Post | null>(null)
+  const [lightboxSrc, setLightboxSrc]   = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const supabase = createClient()
+
+  function openCreate() {
+    setEditingId(null)
+    setExistingImageUrl(null)
+    setTitle('')
+    setContent('')
+    setAnonymous(false)
+    setImageFile(null)
+    setImagePreview(null)
+    setError('')
+    setShowForm(true)
+  }
+
+  function openEdit(post: Post) {
+    setEditingId(post.id)
+    setExistingImageUrl(post.image_url)
+    setTitle(post.title)
+    setContent(post.content)
+    setAnonymous(post.anonymous)
+    setImageFile(null)
+    setImagePreview(post.image_url)
+    setError('')
+    setShowForm(true)
+  }
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     setImageFile(file)
     setImagePreview(URL.createObjectURL(file))
+    setExistingImageUrl(null)
   }
 
   function removeImage() {
     setImageFile(null)
     setImagePreview(null)
+    setExistingImageUrl(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   function resetForm() {
+    setEditingId(null)
+    setExistingImageUrl(null)
     setTitle('')
     setContent('')
-    removeImage()
+    setAnonymous(false)
+    setImageFile(null)
+    setImagePreview(null)
     setError('')
     setShowForm(false)
   }
@@ -65,7 +116,8 @@ export default function BonPlansContent({ posts, role, userId }: Props) {
     setLoading(true)
     setError('')
 
-    let image_url: string | null = null
+    // Resolve image URL
+    let image_url: string | null = existingImageUrl
 
     if (imageFile) {
       const ext = imageFile.name.split('.').pop()
@@ -84,14 +136,21 @@ export default function BonPlansContent({ posts, role, userId }: Props) {
       image_url = urlData.publicUrl
     }
 
-    const { error } = await supabase.from('bon_plans').insert({ title, content, image_url, author_id: userId })
-
-    if (error) {
-      setError(error.message)
+    if (editingId) {
+      const { error: err } = await supabase
+        .from('bon_plans')
+        .update({ title, content, image_url, anonymous })
+        .eq('id', editingId)
+      if (err) { setError(err.message); setLoading(false); return }
     } else {
-      resetForm()
-      router.refresh()
+      const { error: err } = await supabase
+        .from('bon_plans')
+        .insert({ title, content, image_url, author_id: userId, anonymous })
+      if (err) { setError(err.message); setLoading(false); return }
     }
+
+    resetForm()
+    router.refresh()
     setLoading(false)
   }
 
@@ -110,7 +169,7 @@ export default function BonPlansContent({ posts, role, userId }: Props) {
     <div>
       {canPost && !showForm && (
         <button
-          onClick={() => setShowForm(true)}
+          onClick={openCreate}
           className="mb-6 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
         >
           <Plus className="w-4 h-4" />
@@ -121,7 +180,9 @@ export default function BonPlansContent({ posts, role, userId }: Props) {
       {showForm && (
         <div className="mb-6 bg-white rounded-2xl border border-[var(--border)] overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--border)]">
-            <span className="text-sm font-semibold text-[var(--foreground)]">Nouveau bon plan</span>
+            <span className="text-sm font-semibold text-[var(--foreground)]">
+              {editingId ? 'Modifier le bon plan' : 'Nouveau bon plan'}
+            </span>
             <button onClick={resetForm} className="p-1.5 rounded-lg hover:bg-[var(--border)] text-[var(--muted)] transition-colors">
               <X className="w-4 h-4" />
             </button>
@@ -177,6 +238,17 @@ export default function BonPlansContent({ posts, role, userId }: Props) {
               />
             </div>
 
+            {/* Anonymat */}
+            <label className="flex items-center gap-2.5 cursor-pointer select-none w-fit">
+              <input
+                type="checkbox"
+                checked={anonymous}
+                onChange={e => setAnonymous(e.target.checked)}
+                className="w-4 h-4 rounded accent-[var(--primary)] cursor-pointer"
+              />
+              <span className="text-sm text-[var(--foreground)]">Publier anonymement</span>
+            </label>
+
             {error && (
               <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
             )}
@@ -196,7 +268,9 @@ export default function BonPlansContent({ posts, role, userId }: Props) {
               >
                 {loading
                   ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  : <><Send className="w-3.5 h-3.5" /> Publier</>}
+                  : editingId
+                    ? <><Pencil className="w-3.5 h-3.5" /> Enregistrer</>
+                    : <><Send className="w-3.5 h-3.5" /> Publier</>}
               </button>
             </div>
           </form>
@@ -213,51 +287,144 @@ export default function BonPlansContent({ posts, role, userId }: Props) {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {posts.map(post => (
-            <div key={post.id} className="bg-white rounded-2xl border border-[var(--border)] overflow-hidden">
-              <div className="h-1 bg-[var(--primary)]" />
+          {posts.map(post => {
+            const isAnon = post.anonymous
+            const author = post.users
 
-              {post.image_url && (
-                <div className="relative w-full h-48">
-                  <img
-                    src={post.image_url}
-                    alt={post.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
+            return (
+              <div key={post.id} className="bg-white rounded-2xl border border-[var(--border)] overflow-hidden">
+                <div className="h-1 bg-[var(--primary)]" />
 
-              <div className="p-5">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-[var(--primary-light)] flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-bold text-[var(--primary)]">
-                        {post.users?.full_name.charAt(0).toUpperCase() ?? '?'}
-                      </span>
+                {post.image_url && (
+                  <div
+                    className="relative w-full h-48 cursor-zoom-in"
+                    onClick={() => setLightboxSrc(post.image_url)}
+                  >
+                    <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
+                  </div>
+                )}
+
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-2.5">
+                      {isAnon ? (
+                        <>
+                          <div className="w-8 h-8 rounded-full bg-[var(--border)] flex items-center justify-center flex-shrink-0">
+                            <User className="w-4 h-4 text-[var(--muted)]" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-[var(--muted)] italic">Anonyme</p>
+                            <p className="text-[10px] text-[var(--muted)]">
+                              {formatDistanceToNow(parseISO(post.created_at), { addSuffix: true, locale: fr })}
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setProfilePost(post)}
+                          className="flex items-center gap-2.5 group"
+                        >
+                          {author?.avatar_url ? (
+                            <img src={author.avatar_url} alt={author.full_name} className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-[var(--border)]" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-[var(--primary-light)] flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-bold text-[var(--primary)]">
+                                {author?.full_name.charAt(0).toUpperCase() ?? '?'}
+                              </span>
+                            </div>
+                          )}
+                          <div className="text-left">
+                            <p className="text-xs font-semibold text-[var(--foreground)] group-hover:text-[var(--primary)] group-hover:underline transition-colors">
+                              {author?.full_name ?? 'Inconnu'}
+                            </p>
+                            <p className="text-[10px] text-[var(--muted)]">
+                              {formatDistanceToNow(parseISO(post.created_at), { addSuffix: true, locale: fr })}
+                            </p>
+                          </div>
+                        </button>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold text-[var(--foreground)]">{post.users?.full_name ?? 'Inconnu'}</p>
-                      <p className="text-[10px] text-[var(--muted)]">
-                        {formatDistanceToNow(parseISO(post.created_at), { addSuffix: true, locale: fr })}
-                      </p>
+
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {canEdit(post.author_id) && (
+                        <button
+                          onClick={() => openEdit(post)}
+                          className="p-1.5 rounded-lg hover:bg-[var(--background)] text-[var(--muted)] hover:text-[var(--primary)] transition-colors"
+                          title="Modifier"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      {canDelete(post.author_id) && (
+                        <button
+                          onClick={() => handleDelete(post.id, post.image_url)}
+                          className="p-1.5 rounded-lg hover:bg-red-50 text-[var(--muted)] hover:text-red-500 transition-colors"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  {canDelete(post.author_id) && (
-                    <button
-                      onClick={() => handleDelete(post.id, post.image_url)}
-                      className="p-1.5 rounded-lg hover:bg-red-50 text-[var(--muted)] hover:text-red-500 transition-colors flex-shrink-0"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
+                  <h3 className="font-bold text-[var(--foreground)] mb-1.5">{post.title}</h3>
+                  <p className="text-sm text-[var(--muted)] leading-relaxed whitespace-pre-wrap">{post.content}</p>
                 </div>
-
-                <h3 className="font-bold text-[var(--foreground)] mb-1.5">{post.title}</h3>
-                <p className="text-sm text-[var(--muted)] leading-relaxed whitespace-pre-wrap">{post.content}</p>
               </div>
+            )
+          })}
+        </div>
+      )}
+
+      {lightboxSrc && (
+        <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+      )}
+
+      {/* Modale profil */}
+      {profilePost && !profilePost.anonymous && profilePost.users && (
+        <div
+          className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          onClick={() => setProfilePost(null)}
+        >
+          <div
+            className="animate-slide-up bg-white rounded-2xl shadow-xl w-full max-w-xs overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setProfilePost(null)}
+              className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-[var(--border)] transition-colors"
+            >
+              <X className="w-4 h-4 text-[var(--muted)]" />
+            </button>
+
+            <div className="bg-[var(--primary-light)] h-16" />
+            <div className="px-5 pb-5">
+              <div className="-mt-8 mb-3">
+                {profilePost.users.avatar_url ? (
+                  <img
+                    src={profilePost.users.avatar_url}
+                    alt={profilePost.users.full_name}
+                    className="w-16 h-16 rounded-2xl object-cover border-4 border-white shadow-sm"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-2xl bg-[var(--primary)] flex items-center justify-center border-4 border-white shadow-sm">
+                    <span className="text-xl font-bold text-white">
+                      {profilePost.users.full_name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <p className="font-bold text-[var(--foreground)] text-lg leading-tight">{profilePost.users.full_name}</p>
+              {profilePost.users.role && (
+                <p className="text-xs text-[var(--primary)] font-medium mt-0.5">
+                  {ROLE_LABELS[profilePost.users.role] ?? profilePost.users.role}
+                </p>
+              )}
+              {profilePost.users.organisme && (
+                <p className="text-xs text-[var(--muted)] mt-2">{profilePost.users.organisme}</p>
+              )}
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>

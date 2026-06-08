@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
+import { CheckCircle2 } from 'lucide-react'
 
 export default function RegisterForm() {
   const [fullName, setFullName] = useState('')
@@ -12,9 +13,57 @@ export default function RegisterForm() {
   const [organisme, setOrganisme] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([])
+  const [suggestions, setSuggestions] = useState<{ id: string; name: string }[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const suggestionsRef = useRef<HTMLDivElement>(null)
+
   const supabase = createClient()
 
-  const isCollaborateur = organisme.trim().length > 0
+  const matchedCompany = companies.find(
+    c => c.name.trim().toLowerCase() === organisme.trim().toLowerCase()
+  ) ?? null
+
+  const isCollaborateur = matchedCompany !== null
+
+  // Fetch companies once on mount
+  useEffect(() => {
+    supabase.from('entreprises').select('id, name').order('name').then(({ data }) => {
+      setCompanies(data ?? [])
+    })
+  }, [])
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    function onMouseDown(e: MouseEvent) {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false)
+      }
+    }
+    document.addEventListener('mousedown', onMouseDown)
+    return () => document.removeEventListener('mousedown', onMouseDown)
+  }, [])
+
+  function handleOrganismeChange(value: string) {
+    setOrganisme(value)
+    if (value.trim().length >= 2) {
+      const filtered = companies.filter(c =>
+        c.name.toLowerCase().includes(value.trim().toLowerCase())
+      )
+      setSuggestions(filtered)
+      setShowSuggestions(filtered.length > 0)
+    } else {
+      setSuggestions([])
+      setShowSuggestions(false)
+    }
+  }
+
+  function selectCompany(name: string) {
+    setOrganisme(name)
+    setSuggestions([])
+    setShowSuggestions(false)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -112,17 +161,47 @@ export default function RegisterForm() {
         <p className="text-xs text-[var(--muted)] -mt-0.5">
           Si oui, indiquez-la ci-dessous :
         </p>
-        <input
-          type="text"
-          value={organisme}
-          onChange={e => setOrganisme(e.target.value)}
-          placeholder="Nom de l'entreprise partenaire"
-          className={inputClass}
-        />
+
+        <div className="relative" ref={suggestionsRef}>
+          <input
+            type="text"
+            value={organisme}
+            onChange={e => handleOrganismeChange(e.target.value)}
+            onFocus={() => {
+              if (suggestions.length > 0) setShowSuggestions(true)
+            }}
+            placeholder="Nom de l'entreprise partenaire"
+            className={`${inputClass} ${isCollaborateur ? 'border-green-400 ring-2 ring-green-200' : ''}`}
+            autoComplete="off"
+          />
+
+          {/* Suggestions dropdown */}
+          {showSuggestions && (
+            <div className="animate-scale-in absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-[var(--border)] shadow-lg overflow-hidden z-20">
+              {suggestions.map(c => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => selectCompany(c.name)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[var(--foreground)] hover:bg-[var(--background)] transition-colors text-left"
+                >
+                  <div className="w-6 h-6 rounded-lg bg-[var(--primary-light)] flex items-center justify-center flex-shrink-0">
+                    <span className="text-[10px] font-bold text-[var(--primary)]">
+                      {c.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  {c.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Confirmation badge */}
         {isCollaborateur && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-xl text-xs text-green-700 font-medium">
-            <span className="w-4 h-4 rounded-full bg-green-500 text-white flex items-center justify-center text-[10px] flex-shrink-0">✓</span>
-            Rôle Collaborateur attribué — accès gratuit aux ateliers
+          <div className="animate-fade-slide flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-xl text-xs text-green-700 font-medium">
+            <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+            Entreprise partenaire reconnue — accès collaborateur attribué
           </div>
         )}
       </div>

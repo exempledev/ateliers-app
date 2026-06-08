@@ -19,12 +19,13 @@ export default async function BonPlansPage() {
 
   const { data: rawPosts } = await supabase
     .from('bon_plans')
-    .select('id, title, content, image_url, created_at, author_id, users(full_name)')
+    .select('id, title, content, image_url, anonymous, created_at, author_id, users(full_name, avatar_url, role, organisme)')
     .order('created_at', { ascending: false })
 
   const posts = (rawPosts ?? []).map(p => ({
     ...p,
-    users: Array.isArray(p.users) ? (p.users[0] ?? null) : (p.users as { full_name: string } | null),
+    anonymous: p.anonymous ?? false,
+    users: Array.isArray(p.users) ? (p.users[0] ?? null) : (p.users as { full_name: string; avatar_url?: string | null; role?: string | null; organisme?: string | null } | null),
   }))
 
   return (

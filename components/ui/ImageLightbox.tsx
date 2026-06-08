@@ -1,0 +1,40 @@
+'use client'
+
+import { useEffect } from 'react'
+import { X } from 'lucide-react'
+
+interface Props {
+  src: string
+  alt?: string
+  onClose: () => void
+}
+
+export default function ImageLightbox({ src, alt = '', onClose }: Props) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div
+      className="animate-fade-in fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors"
+      >
+        <X className="w-5 h-5" />
+      </button>
+      <img
+        src={src}
+        alt={alt}
+        onClick={e => e.stopPropagation()}
+        className="animate-scale-in max-w-full max-h-[90vh] rounded-2xl object-contain shadow-2xl"
+      />
+    </div>
+  )
+}

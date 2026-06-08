@@ -16,14 +16,18 @@ export default async function DashboardPage() {
     .single()
 
   if (!profile) redirect('/connexion')
-  if (profile.role === 'admin') redirect('/admin')
-  if (profile.role === 'participant') redirect('/planning')
+  if (profile.role === 'participant' || profile.role === 'collaborateur') redirect('/planning')
 
-  const { data: ateliers } = await supabase
+  const ateliersQuery = supabase
     .from('ateliers_with_spots')
     .select('*, reservations(user_id, status, users(full_name, email))')
-    .eq('animateur_id', profile.role === 'admin' ? undefined : user.id)
     .order('date', { ascending: false })
+
+  const { data: ateliers } = await (
+    profile.role === 'admin'
+      ? ateliersQuery
+      : ateliersQuery.eq('animateur_id', user.id)
+  )
 
   return (
     <>

@@ -31,7 +31,7 @@ export default async function ModifierAtelierPage({ params }: { params: Promise<
     const { data } = await supabase
       .from('users')
       .select('id, full_name, email')
-      .eq('role', 'animateur')
+      .in('role', ['animateur', 'admin'])
       .eq('is_active', true)
       .order('full_name')
     animateurs = data ?? []

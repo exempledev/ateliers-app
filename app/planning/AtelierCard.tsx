@@ -233,7 +233,7 @@ export default function AtelierCard({ atelier, isReserved, isLoggedIn, userRole,
           <button
             onClick={e => { e.stopPropagation(); handleReservation() }}
             disabled={loading || (isFull && !reserved)}
-            className={`w-full py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+            className={`w-full py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 ${
               reserved
                 ? 'bg-[var(--primary-light)] text-[var(--primary)] hover:bg-red-50 hover:text-red-500 border border-[var(--primary-light)]'
                 : isFull
@@ -264,7 +264,7 @@ export default function AtelierCard({ atelier, isReserved, isLoggedIn, userRole,
       {contextMenu && (
         <div
           ref={menuRef}
-          className="fixed z-50 bg-white rounded-xl border border-[var(--border)] shadow-xl overflow-hidden w-44"
+          className="animate-scale-in fixed z-50 bg-white rounded-xl border border-[var(--border)] shadow-xl overflow-hidden w-44"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
           {!confirmDelete ? (

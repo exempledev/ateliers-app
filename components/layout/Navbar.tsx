@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronDown, User, LogOut, LayoutDashboard, Users, CreditCard } from 'lucide-react'
+import { ChevronDown, User, LogOut, LayoutDashboard, Users, CreditCard, Building2, CalendarPlus } from 'lucide-react'
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -53,22 +53,21 @@ export default function Navbar() {
 
   const links = role === 'admin'
     ? [
-        { href: '/ateliers/nouveau', label: 'Créer un atelier' },
         { href: '/planning', label: 'Planning' },
-        { href: '/membres', label: 'Membres' },
+        { href: '/entreprises', label: 'Entreprises' },
         ...commonLinks,
       ]
     : role === 'animateur'
     ? [
         { href: '/dashboard', label: 'Tableau de bord' },
         { href: '/planning', label: 'Planning' },
-        { href: '/membres', label: 'Membres' },
+        { href: '/entreprises', label: 'Entreprises' },
         ...commonLinks,
       ]
     : role === 'participant' || role === 'collaborateur'
     ? [
         { href: '/planning', label: 'Planning' },
-        { href: '/membres', label: 'Membres' },
+        { href: '/entreprises', label: 'Entreprises' },
         ...commonLinks,
       ]
     : [
@@ -104,7 +103,7 @@ export default function Navbar() {
               </button>
 
               {adminOpen && (
-                <div className="absolute left-0 top-full mt-2 w-52 bg-white rounded-xl border border-[var(--border)] shadow-lg overflow-hidden z-50">
+                <div className="animate-slide-up absolute left-0 top-full mt-2 w-56 bg-white rounded-xl border border-[var(--border)] shadow-lg overflow-hidden z-50">
                   <Link
                     href="/admin"
                     onClick={() => setAdminOpen(false)}
@@ -120,6 +119,34 @@ export default function Navbar() {
                   </Link>
                   <div className="border-t border-[var(--border)]" />
                   <Link
+                    href="/dashboard"
+                    onClick={() => setAdminOpen(false)}
+                    className={cn(
+                      'flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors',
+                      pathname === '/dashboard'
+                        ? 'bg-[var(--primary-light)] text-[var(--primary)]'
+                        : 'text-[var(--foreground)] hover:bg-[var(--background)]'
+                    )}
+                  >
+                    <LayoutDashboard className="w-3.5 h-3.5 text-[var(--muted)]" />
+                    Mes ateliers
+                  </Link>
+                  <div className="border-t border-[var(--border)]" />
+                  <Link
+                    href="/ateliers/nouveau"
+                    onClick={() => setAdminOpen(false)}
+                    className={cn(
+                      'flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors',
+                      pathname === '/ateliers/nouveau'
+                        ? 'bg-[var(--primary-light)] text-[var(--primary)]'
+                        : 'text-[var(--foreground)] hover:bg-[var(--background)]'
+                    )}
+                  >
+                    <CalendarPlus className="w-3.5 h-3.5 text-[var(--muted)]" />
+                    Créer un atelier
+                  </Link>
+                  <div className="border-t border-[var(--border)]" />
+                  <Link
                     href="/admin/utilisateurs"
                     onClick={() => setAdminOpen(false)}
                     className={cn(
@@ -131,6 +158,20 @@ export default function Navbar() {
                   >
                     <Users className="w-3.5 h-3.5 text-[var(--muted)]" />
                     Utilisateurs
+                  </Link>
+                  <div className="border-t border-[var(--border)]" />
+                  <Link
+                    href="/admin/entreprises"
+                    onClick={() => setAdminOpen(false)}
+                    className={cn(
+                      'flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors',
+                      pathname === '/admin/entreprises'
+                        ? 'bg-[var(--primary-light)] text-[var(--primary)]'
+                        : 'text-[var(--foreground)] hover:bg-[var(--background)]'
+                    )}
+                  >
+                    <Building2 className="w-3.5 h-3.5 text-[var(--muted)]" />
+                    Entreprises
                   </Link>
                   <div className="border-t border-[var(--border)]" />
                   <Link
@@ -179,7 +220,7 @@ export default function Navbar() {
               </button>
 
               {accountOpen && (
-                <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded-xl border border-[var(--border)] shadow-lg overflow-hidden z-50">
+                <div className="animate-slide-up absolute right-0 top-full mt-2 w-44 bg-white rounded-xl border border-[var(--border)] shadow-lg overflow-hidden z-50">
                   <Link
                     href="/mon-compte"
                     onClick={() => setAccountOpen(false)}
