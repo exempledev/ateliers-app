@@ -79,7 +79,7 @@ export default function HomePage() {
             <div className="flex justify-center divide-x divide-[var(--border)]">
               {[
                 { value: '2', label: 'ateliers par semaine' },
-                { value: '15–20', label: 'places par atelier' },
+                { value: '10–15', label: 'places par atelier' },
               ].map(({ value, label }) => (
                 <div key={label} className="text-center px-4 py-2">
                   <p className="text-2xl font-bold text-[var(--primary)]">{value}</p>
