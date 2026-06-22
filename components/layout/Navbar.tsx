@@ -46,33 +46,41 @@ export default function Navbar() {
     window.location.href = '/'
   }
 
-  const commonLinks = [
-    { href: '/actualites', label: 'Actualités' },
-    { href: '/bon-plans', label: 'Bons Plans' },
-  ]
+  const actualitesLink = { href: '/actualites', label: 'Actualités' }
+  const bonPlansLink = { href: '/bon-plans', label: 'Bons Plans' }
 
   const links = role === 'admin'
     ? [
         { href: '/planning', label: 'Planning' },
         { href: '/entreprises', label: 'Entreprises' },
-        ...commonLinks,
+        actualitesLink,
+        bonPlansLink,
       ]
     : role === 'animateur'
     ? [
         { href: '/dashboard', label: 'Tableau de bord' },
         { href: '/planning', label: 'Planning' },
         { href: '/entreprises', label: 'Entreprises' },
-        ...commonLinks,
+        actualitesLink,
+        bonPlansLink,
       ]
-    : role === 'participant' || role === 'collaborateur'
+    : role === 'collaborateur'
     ? [
         { href: '/planning', label: 'Planning' },
         { href: '/entreprises', label: 'Entreprises' },
-        ...commonLinks,
+        actualitesLink,
+        bonPlansLink,
+      ]
+    : role === 'participant'
+    ? [
+        { href: '/planning', label: 'Planning' },
+        { href: '/entreprises', label: 'Entreprises' },
+        actualitesLink,
       ]
     : [
         { href: '/planning', label: 'Planning' },
-        ...commonLinks,
+        { href: '/entreprises', label: 'Entreprises' },
+        actualitesLink,
       ]
 
   const isAdminSection = pathname.startsWith('/admin')

@@ -6,7 +6,8 @@ import Button from '@/components/ui/Button'
 import { CheckCircle2 } from 'lucide-react'
 
 export default function RegisterForm() {
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [phone, setPhone] = useState('')
@@ -73,6 +74,7 @@ export default function RegisterForm() {
     const role = isCollaborateur ? 'collaborateur' : 'participant'
     const digits = phone.trim().replace(/^0/, '')
     const fullPhone = digits ? `+33${digits}` : null
+    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim()
 
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
@@ -112,16 +114,30 @@ export default function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
-      <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-[var(--foreground)]">Nom complet</label>
-        <input
-          type="text"
-          value={fullName}
-          onChange={e => setFullName(e.target.value)}
-          placeholder="Jean Dupont"
-          required
-          className={inputClass}
-        />
+      <div className="flex gap-3">
+        <div className="flex flex-col gap-1.5 flex-1">
+          <label className="text-sm font-medium text-[var(--foreground)]">Prénom</label>
+          <input
+            type="text"
+            value={firstName}
+            onChange={e => setFirstName(e.target.value)}
+            placeholder="Jean"
+            required
+            className={inputClass}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5 flex-1">
+          <label className="text-sm font-medium text-[var(--foreground)]">Nom</label>
+          <input
+            type="text"
+            value={lastName}
+            onChange={e => setLastName(e.target.value)}
+            placeholder="Dupont"
+            required
+            className={inputClass}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-1.5">

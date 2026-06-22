@@ -2,20 +2,22 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, X } from 'lucide-react'
+import { Check, X, ShieldCheck, Trash2, AlertTriangle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Card from '@/components/ui/Card'
 import type { User } from '@/types'
 
 interface Props {
+  admins: User[]
   animateurs: User[]
   participants: User[]
   collaborateurs: User[]
 }
 
-export default function AdminContent({ animateurs, participants, collaborateurs }: Props) {
+export default function AdminContent({ admins, animateurs, participants, collaborateurs }: Props) {
   const router = useRouter()
   const supabase = createClient()
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
 
   async function toggleActive(user: User) {
     await supabase
@@ -33,12 +35,56 @@ export default function AdminContent({ animateurs, participants, collaborateurs 
     router.refresh()
   }
 
+  async function confirmDelete(user: User) {
+    const res = await fetch('/api/admin/delete-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id }),
+    })
+    if (res.ok) {
+      setUserToDelete(null)
+      router.refresh()
+    } else {
+      const { error } = await res.json()
+      alert(`Erreur : ${error}`)
+    }
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-[var(--foreground)] mb-8">Administration</h1>
 
       <div className="grid grid-cols-1 gap-6">
-        {/* Animateurs list */}
+        {/* Administrateurs */}
+        <Card className="p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="font-semibold text-[var(--foreground)] leading-none">Administrateurs ({admins.length})</h2>
+            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-600 leading-none">
+              <ShieldCheck className="w-3 h-3 shrink-0" />
+              Sécurisé
+            </span>
+          </div>
+          <div className="flex flex-col gap-1">
+            {admins.length === 0 ? (
+              <p className="text-sm text-[var(--muted)]">Aucun administrateur.</p>
+            ) : (
+              admins.map(u => (
+                <div key={u.id} className="flex items-center gap-3 py-2 border-b border-[var(--border)] last:border-0">
+                  <div className="w-7 h-7 rounded-full bg-[var(--accent-light)] flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-semibold text-[var(--accent)]">{u.full_name.charAt(0).toUpperCase()}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[var(--foreground)] truncate">{u.full_name}</p>
+                    <p className="text-xs text-[var(--muted)] truncate">{u.email}</p>
+                  </div>
+                  <DeleteButton user={u} onDelete={setUserToDelete} />
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
+
+        {/* Animateurs */}
         <Card className="p-5">
           <h2 className="font-semibold text-[var(--foreground)] mb-4">
             Animateurs ({animateurs.length})
@@ -69,10 +115,10 @@ export default function AdminContent({ animateurs, participants, collaborateurs 
                       user={user}
                       onChangeRole={(newRole) => changeRole(user.id, newRole)}
                     />
+                    <DeleteButton user={user} onDelete={setUserToDelete} />
                   </div>
                 </div>
               ))
-
             )}
           </div>
         </Card>
@@ -100,10 +146,13 @@ export default function AdminContent({ animateurs, participants, collaborateurs 
                     <p className="text-xs text-[var(--muted)] truncate">{user.email}</p>
                   </div>
                 </div>
-                <RoleSelect
-                  user={user}
-                  onChangeRole={(newRole) => changeRole(user.id, newRole)}
-                />
+                <div className="flex items-center gap-2">
+                  <RoleSelect
+                    user={user}
+                    onChangeRole={(newRole) => changeRole(user.id, newRole)}
+                  />
+                  <DeleteButton user={user} onDelete={setUserToDelete} />
+                </div>
               </div>
             ))
           )}
@@ -132,15 +181,26 @@ export default function AdminContent({ animateurs, participants, collaborateurs 
                     <p className="text-xs text-[var(--muted)] truncate">{user.email}</p>
                   </div>
                 </div>
-                <RoleSelect
-                  user={user}
-                  onChangeRole={(newRole) => changeRole(user.id, newRole)}
-                />
+                <div className="flex items-center gap-2">
+                  <RoleSelect
+                    user={user}
+                    onChangeRole={(newRole) => changeRole(user.id, newRole)}
+                  />
+                  <DeleteButton user={user} onDelete={setUserToDelete} />
+                </div>
               </div>
             ))
           )}
         </div>
       </Card>
+
+      {userToDelete && (
+        <DeleteConfirmModal
+          user={userToDelete}
+          onConfirm={() => confirmDelete(userToDelete)}
+          onCancel={() => setUserToDelete(null)}
+        />
+      )}
     </div>
   )
 }
@@ -174,5 +234,93 @@ function RoleSelect({
       <option value="collaborateur">Collaborateur</option>
       <option value="animateur">Animateur</option>
     </select>
+  )
+}
+
+function DeleteButton({ user, onDelete }: { user: User; onDelete: (u: User) => void }) {
+  return (
+    <button
+      onClick={() => onDelete(user)}
+      className="p-1.5 rounded-lg text-[var(--muted)] hover:text-red-500 hover:bg-red-50 transition-colors"
+      title="Supprimer"
+    >
+      <Trash2 className="w-3.5 h-3.5" />
+    </button>
+  )
+}
+
+function DeleteConfirmModal({
+  user,
+  onConfirm,
+  onCancel,
+}: {
+  user: User
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const matches = input.trim().toLowerCase() === user.full_name.trim().toLowerCase()
+
+  async function handleConfirm() {
+    if (!matches) return
+    setLoading(true)
+    await onConfirm()
+    setLoading(false)
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-sm bg-black/30 p-4"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 flex flex-col gap-5"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+          </div>
+          <div>
+            <h2 className="font-bold text-[var(--foreground)]">Supprimer l'utilisateur</h2>
+            <p className="text-sm text-[var(--muted)] mt-1">
+              Cette action est <span className="font-semibold text-red-500">irréversible</span>. Toutes les données associées seront supprimées.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="text-xs font-medium text-[var(--muted)]">
+            Tapez <span className="font-bold text-[var(--foreground)]">{user.full_name}</span> pour confirmer
+          </label>
+          <input
+            type="text"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleConfirm()}
+            placeholder={user.full_name}
+            autoFocus
+            className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-red-300 transition"
+          />
+        </div>
+
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--background)] transition-colors"
+          >
+            Annuler
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={!matches || loading}
+            className="px-4 py-2 rounded-xl text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Suppression…' : 'Supprimer définitivement'}
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }

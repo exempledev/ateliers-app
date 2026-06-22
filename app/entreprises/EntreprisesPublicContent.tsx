@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Building2, Mail, Phone, MapPin, X, Users } from 'lucide-react'
+import { Building2, Mail, Phone, MapPin, X, Users, Globe } from 'lucide-react'
 
 interface Entreprise {
   id: string
@@ -12,6 +12,7 @@ interface Entreprise {
   contact_email: string | null
   contact_phone: string | null
   description: string | null
+  website: string | null
 }
 
 interface Collaborateur {
@@ -28,8 +29,8 @@ interface Intervenant {
   full_name: string
   email: string
   avatar_url?: string | null
-  bio?: string | null
   role: string
+  organisme?: string | null
 }
 
 interface Props {
@@ -43,9 +44,10 @@ type Tab = 'entreprises' | 'intervenants'
 function Avatar({ name, url, size = 'md', square = false }: { name: string; url?: string | null; size?: 'sm' | 'md' | 'lg'; square?: boolean }) {
   const dim = size === 'sm' ? 'w-8 h-8 text-xs' : size === 'lg' ? 'w-14 h-14 text-xl' : 'w-12 h-12 text-base'
   const shape = square ? 'rounded-2xl' : 'rounded-full'
-  if (url) return <img src={url} alt={name} className={`${dim} ${shape} object-cover flex-shrink-0 border border-[var(--border)]`} />
+  const base = `${dim} ${shape} flex-shrink-0 border border-[var(--border)]`
+  if (url) return <img src={url} alt={name} className={`${base} object-cover`} />
   return (
-    <div className={`${dim} ${shape} bg-[var(--primary-light)] flex items-center justify-center flex-shrink-0`}>
+    <div className={`${base} bg-[var(--primary-light)] flex items-center justify-center`}>
       <span className="font-bold text-[var(--primary)]">{name.charAt(0).toUpperCase()}</span>
     </div>
   )
@@ -72,7 +74,7 @@ export default function EntreprisesPublicContent({ entreprises, collaborateurs, 
       {/* Header + tabs */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-[var(--foreground)] mb-5">Entreprises & Intervenants</h1>
-        <div className="flex gap-1 bg-white border border-[var(--border)] rounded-2xl p-1 w-fit">
+        <div className="grid grid-cols-2 gap-1 bg-white border border-[var(--border)] rounded-2xl p-1 w-fit">
           {([
             { key: 'entreprises', label: 'Entreprises Partenaires', icon: Building2 },
             { key: 'intervenants', label: 'Intervenants', icon: Users },
@@ -80,75 +82,74 @@ export default function EntreprisesPublicContent({ entreprises, collaborateurs, 
             <button
               key={key}
               onClick={() => switchTab(key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+              className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                 tab === key
                   ? 'bg-[var(--primary)] text-white shadow-sm'
                   : 'text-[var(--muted)] hover:text-[var(--foreground)]'
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-4 h-4 shrink-0" />
               {label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Onglet Entreprises */}
-      {tab === 'entreprises' && (
-        entreprises.length === 0 ? (
-          <EmptyState icon={Building2} label="Aucune entreprise partenaire" sub="Les entreprises partenaires apparaîtront ici." />
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {entreprises.map(e => (
-              <button
-                key={e.id}
-                onClick={() => setSelected(e)}
-                className="bg-white rounded-2xl border border-[var(--border)] p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-3"
-              >
-                <div className="flex items-center gap-3">
-                  <Avatar name={e.name} url={e.logo_url} square />
-                  <p className="font-bold text-[var(--foreground)] truncate flex-1 min-w-0">{e.name}</p>
-                </div>
-                {e.description && <p className="text-xs text-[var(--muted)] leading-relaxed line-clamp-2">{e.description}</p>}
-                {e.address && (
-                  <span className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
-                    <MapPin className="w-3 h-3 flex-shrink-0" />
-                    <span className="truncate">{e.address}</span>
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        )
-      )}
-
-      {/* Onglet Intervenants */}
-      {tab === 'intervenants' && (
-        intervenants.length === 0 ? (
-          <EmptyState icon={Users} label="Aucun intervenant" sub="Les intervenants apparaîtront ici." />
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {intervenants.map(i => (
-              <div key={i.id} className="bg-white rounded-2xl border border-[var(--border)] p-5 flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  <Avatar name={i.full_name} url={i.avatar_url} />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-[var(--foreground)] truncate">{i.full_name}</p>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      i.role === 'admin'
-                        ? 'bg-[var(--accent-light)] text-[var(--accent)]'
-                        : 'bg-[var(--primary-light)] text-[var(--primary)]'
-                    }`}>
-                      {i.role === 'admin' ? 'Administrateur' : 'Animateur'}
-                    </span>
+      {/* Contenu — les deux panels superposés dans la même cellule grid, seule l'opacité change */}
+      <div className="grid">
+        {/* Onglet Entreprises */}
+        <div className={`col-start-1 row-start-1 transition-opacity duration-150 ${tab !== 'entreprises' ? 'opacity-0 pointer-events-none select-none' : ''}`}>
+          {entreprises.length === 0 ? (
+            <EmptyState icon={Building2} label="Aucune entreprise partenaire" sub="Les entreprises partenaires apparaîtront ici." />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {entreprises.map(e => (
+                <button
+                  key={e.id}
+                  onClick={() => setSelected(e)}
+                  className="bg-white rounded-2xl border border-[var(--border)] p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between h-40 overflow-hidden"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar name={e.name} url={e.logo_url} square />
+                    <p className="font-bold text-[var(--foreground)] truncate flex-1 min-w-0">{e.name}</p>
                   </div>
+                  {e.description && <p className="text-xs text-[var(--muted)] leading-relaxed line-clamp-2">{e.description}</p>}
+                  {e.address && (
+                    <span className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
+                      <MapPin className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">{e.address}</span>
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Onglet Intervenants */}
+        <div className={`col-start-1 row-start-1 transition-opacity duration-150 ${tab !== 'intervenants' ? 'opacity-0 pointer-events-none select-none' : ''}`}>
+          {intervenants.length === 0 ? (
+            <EmptyState icon={Users} label="Aucun intervenant" sub="Les intervenants apparaîtront ici." />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {intervenants.map(i => (
+                <div key={i.id} className="bg-white rounded-2xl border border-[var(--border)] p-5 flex flex-col justify-between h-40 overflow-hidden">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar name={i.full_name} url={i.avatar_url} square />
+                    <p className="font-bold text-[var(--foreground)] truncate flex-1 min-w-0">{i.full_name}</p>
+                  </div>
+                  {i.organisme && (
+                    <span className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
+                      <Building2 className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">{i.organisme}</span>
+                    </span>
+                  )}
                 </div>
-                {i.bio && <p className="text-xs text-[var(--muted)] leading-relaxed line-clamp-3">{i.bio}</p>}
-              </div>
-            ))}
-          </div>
-        )
-      )}
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Modale détail entreprise */}
       {selected && (
@@ -196,6 +197,11 @@ export default function EntreprisesPublicContent({ entreprises, collaborateurs, 
                 {selected.contact_phone && (
                   <InfoRow icon={Phone}>
                     <a href={`tel:${selected.contact_phone}`} className="text-sm text-[var(--foreground)] hover:text-[var(--primary)] transition-colors">{selected.contact_phone}</a>
+                  </InfoRow>
+                )}
+                {selected.website && (
+                  <InfoRow icon={Globe}>
+                    <a href={selected.website} target="_blank" rel="noopener noreferrer" className="text-sm text-[var(--primary)] hover:underline truncate block">{selected.website.replace(/^https?:\/\//, '')}</a>
                   </InfoRow>
                 )}
               </div>
@@ -246,8 +252,8 @@ function EmptyState({ icon: Icon, label, sub }: { icon: React.ElementType; label
 
 function InfoRow({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-2.5">
-      <div className="w-7 h-7 rounded-lg bg-[var(--background)] border border-[var(--border)] flex items-center justify-center flex-shrink-0 mt-0.5">
+    <div className="flex items-center gap-2.5">
+      <div className="w-7 h-7 rounded-lg bg-[var(--background)] border border-[var(--border)] flex items-center justify-center flex-shrink-0">
         <Icon className="w-3.5 h-3.5 text-[var(--muted)]" />
       </div>
       {children}

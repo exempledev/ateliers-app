@@ -14,9 +14,8 @@ export default async function EntreprisesPage() {
       .order('full_name'),
     supabase
       .from('users')
-      .select('id, full_name, email, avatar_url, bio, role')
+      .select('id, full_name, email, avatar_url, bio, role, organisme')
       .in('role', ['animateur', 'admin'])
-      .eq('is_active', true)
       .order('full_name'),
   ])
 

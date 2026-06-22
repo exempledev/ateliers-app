@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import { createClient } from '@/lib/supabase/server'
 import BonPlansContent from './BonPlansContent'
@@ -15,6 +16,10 @@ export default async function BonPlansPage() {
       .eq('id', user.id)
       .single()
     role = profile?.role ?? null
+  }
+
+  if (!role || !['collaborateur', 'animateur', 'admin'].includes(role)) {
+    redirect('/planning')
   }
 
   const { data: rawPosts } = await supabase

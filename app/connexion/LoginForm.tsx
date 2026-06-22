@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 
@@ -60,7 +61,12 @@ export default function LoginForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-[var(--foreground)]">Mot de passe</label>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium text-[var(--foreground)]">Mot de passe</label>
+          <Link href="/mot-de-passe-oublie" className="text-xs text-[var(--primary)] hover:underline">
+            Mot de passe oublié ?
+          </Link>
+        </div>
         <input
           type="password"
           value={password}
