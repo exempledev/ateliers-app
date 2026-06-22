@@ -1,4 +1,4 @@
-export const PAYPAL_BASE = 'https://api-m.sandbox.paypal.com'
+export const PAYPAL_BASE = 'https://api-m.paypal.com'
 
 export async function getPaypalAccessToken(): Promise<string> {
   const auth = Buffer.from(
