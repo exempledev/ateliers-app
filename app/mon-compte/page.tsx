@@ -26,17 +26,21 @@ export default async function MonComptePage() {
         : supabase.from('ateliers_with_spots').select('*').eq('animateur_id', user.id).gte('date', today).order('date', { ascending: true }))
     : null
 
-  const [entrepriseResult, reservationsResult, ateliersResult] = await Promise.all([
-    profile.role === 'collaborateur' && profile.organisme
+  const [entrepriseResult, reservationsResult, ateliersResult, entreprisesListResult] = await Promise.all([
+    (profile.role === 'collaborateur' || profile.role === 'admin') && profile.organisme
       ? supabase.from('entreprises').select('*').ilike('name', profile.organisme.trim()).maybeSingle()
       : Promise.resolve({ data: null, error: null }),
     supabase.from('reservations').select('*, ateliers(*)').eq('user_id', user.id).order('created_at', { ascending: false }),
     ateliersQuery ?? Promise.resolve({ data: null, error: null }),
+    profile.role === 'admin'
+      ? supabase.from('entreprises').select('id, name').order('name')
+      : Promise.resolve({ data: null, error: null }),
   ])
 
   const entreprise = entrepriseResult.data
   const reservations = reservationsResult.data
   const createdAteliers = ateliersResult.data
+  const entreprisesList = entreprisesListResult.data ?? []
 
   const upcoming = reservations?.filter(r =>
     r.status === 'confirmed' && r.ateliers?.date && new Date(r.ateliers.date) >= new Date()
@@ -68,6 +72,9 @@ export default async function MonComptePage() {
             currentName={profile.full_name ?? ''}
             currentPhone={profile.phone ?? null}
             currentBio={profile.bio ?? null}
+            currentOrganisme={profile.organisme ?? null}
+            role={profile.role}
+            entreprises={entreprisesList}
             userId={user.id}
           />
         </Card>

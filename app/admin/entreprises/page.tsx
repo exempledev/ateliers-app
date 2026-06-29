@@ -13,7 +13,7 @@ export default async function EntreprisesPage() {
 
   const [{ data: entreprises }, { data: collaborateurs }] = await Promise.all([
     supabase.from('entreprises').select('*').order('name'),
-    supabase.from('users').select('id, full_name, email, phone, organisme').eq('role', 'collaborateur').order('full_name'),
+    supabase.from('users').select('id, full_name, email, phone, organisme').in('role', ['collaborateur', 'admin']).order('full_name'),
   ])
 
   return (

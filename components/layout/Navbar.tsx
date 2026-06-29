@@ -48,6 +48,7 @@ export default function Navbar() {
 
   const actualitesLink = { href: '/actualites', label: 'Actualités' }
   const bonPlansLink = { href: '/bon-plans', label: 'Bons Plans' }
+  const contactLink = { href: '/contact', label: 'Contact' }
 
   const links = role === 'admin'
     ? [
@@ -55,6 +56,7 @@ export default function Navbar() {
         { href: '/entreprises', label: 'Entreprises' },
         actualitesLink,
         bonPlansLink,
+        contactLink,
       ]
     : role === 'animateur'
     ? [
@@ -63,6 +65,7 @@ export default function Navbar() {
         { href: '/entreprises', label: 'Entreprises' },
         actualitesLink,
         bonPlansLink,
+        contactLink,
       ]
     : role === 'collaborateur'
     ? [
@@ -70,17 +73,20 @@ export default function Navbar() {
         { href: '/entreprises', label: 'Entreprises' },
         actualitesLink,
         bonPlansLink,
+        contactLink,
       ]
     : role === 'participant'
     ? [
         { href: '/planning', label: 'Planning' },
         { href: '/entreprises', label: 'Entreprises' },
         actualitesLink,
+        contactLink,
       ]
     : [
         { href: '/planning', label: 'Planning' },
         { href: '/entreprises', label: 'Entreprises' },
         actualitesLink,
+        contactLink,
       ]
 
   const isAdminSection = pathname.startsWith('/admin')
