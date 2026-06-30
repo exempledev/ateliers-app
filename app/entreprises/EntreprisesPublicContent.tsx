@@ -31,6 +31,7 @@ interface Intervenant {
   avatar_url?: string | null
   role: string
   organisme?: string | null
+  bio?: string | null
 }
 
 interface Props {
@@ -133,13 +134,16 @@ export default function EntreprisesPublicContent({ entreprises, collaborateurs, 
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {intervenants.map(i => (
-                <div key={i.id} className="bg-white rounded-2xl border border-[var(--border)] p-5 flex flex-col justify-between h-40 overflow-hidden">
+                <div key={i.id} className="bg-white rounded-2xl border border-[var(--border)] p-5 flex flex-col gap-3 h-40 overflow-hidden">
                   <div className="flex items-center gap-3 min-w-0">
                     <Avatar name={i.full_name} url={i.avatar_url} square />
                     <p className="font-bold text-[var(--foreground)] truncate flex-1 min-w-0">{i.full_name}</p>
                   </div>
+                  {i.bio && (
+                    <p className="text-xs text-[var(--muted)] leading-relaxed line-clamp-2">{i.bio}</p>
+                  )}
                   {i.organisme && (
-                    <span className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
+                    <span className="flex items-center gap-1.5 text-xs text-[var(--muted)] mt-auto">
                       <Building2 className="w-3 h-3 flex-shrink-0" />
                       <span className="truncate">{i.organisme}</span>
                     </span>
