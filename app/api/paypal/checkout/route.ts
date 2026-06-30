@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   const atelierId = searchParams.get('atelierId')
   const price = searchParams.get('price')
   const title = searchParams.get('title') ?? 'Atelier'
-  const siteUrl = process.env.SITE_URL ?? 'http://localhost:3000'
+  const siteUrl = process.env.SITE_URL ?? 'https://ateliers-app-production-429f.up.railway.app'
 
   if (!atelierId || !price) {
     return NextResponse.redirect(`${siteUrl}/planning`)
