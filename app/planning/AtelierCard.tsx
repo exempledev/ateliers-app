@@ -201,7 +201,7 @@ export default function AtelierCard({ atelier, isReserved, isLoggedIn, userRole,
                 <span className="text-xs text-[var(--muted)]">Tarif</span>
                 {!isLoggedIn ? (
                   <div className="flex flex-col items-end">
-                    <span className="text-sm font-bold text-[var(--muted)]">xx €</span>
+                    <span className="text-sm font-bold text-[var(--primary)]">{price.toFixed(2)} €</span>
                     <span className="text-[10px] text-[var(--muted)] italic">tarif non adhérent</span>
                   </div>
                 ) : userRole === 'collaborateur' ? (
