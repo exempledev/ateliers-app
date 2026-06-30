@@ -53,6 +53,7 @@ export default function Navbar() {
 
   const actualitesLink = { href: '/actualites', label: 'Actualités' }
   const bonPlansLink = { href: '/bon-plans', label: 'Bons Plans' }
+  const proutLink = { href: '/prout', label: 'PROUT' }
   const contactLink = { href: '/contact', label: 'Contact' }
 
   const links = role === 'admin'
@@ -61,6 +62,7 @@ export default function Navbar() {
         { href: '/entreprises', label: 'Entreprises' },
         actualitesLink,
         bonPlansLink,
+        proutLink,
         contactLink,
       ]
     : role === 'animateur'
@@ -71,6 +73,7 @@ export default function Navbar() {
         { href: '/entreprises', label: 'Entreprises' },
         actualitesLink,
         bonPlansLink,
+        proutLink,
         contactLink,
       ]
     : role === 'collaborateur'
@@ -79,6 +82,7 @@ export default function Navbar() {
         { href: '/entreprises', label: 'Entreprises' },
         actualitesLink,
         bonPlansLink,
+        proutLink,
         contactLink,
       ]
     : role === 'participant'
@@ -86,12 +90,14 @@ export default function Navbar() {
         { href: '/planning', label: 'Planning' },
         { href: '/entreprises', label: 'Entreprises' },
         actualitesLink,
+        proutLink,
         contactLink,
       ]
     : [
         { href: '/planning', label: 'Planning' },
         { href: '/entreprises', label: 'Entreprises' },
         actualitesLink,
+        proutLink,
         contactLink,
       ]
 
