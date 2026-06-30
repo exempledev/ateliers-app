@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, X, ShieldCheck, Trash2, AlertTriangle, UserPlus, Search, Loader2 } from 'lucide-react'
+import { Check, X, ShieldCheck, Trash2, AlertTriangle, UserPlus, Search, Loader2, Phone, Mail, Building2, User as UserIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Card from '@/components/ui/Card'
 import type { User } from '@/types'
@@ -20,6 +20,7 @@ export default function AdminContent({ admins, animateurs, participants, collabo
   const router = useRouter()
   const supabase = createClient()
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
   // Gestion ajout admin
   const [showAddAdmin, setShowAddAdmin] = useState(false)
@@ -162,12 +163,12 @@ export default function AdminContent({ admins, animateurs, participants, collabo
                     <span className="text-xs font-semibold text-[var(--accent)]">{u.full_name.charAt(0).toUpperCase()}</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--foreground)] truncate flex items-center gap-1.5">
+                    <button onClick={() => setSelectedUser(u)} className="text-sm font-medium text-[var(--foreground)] truncate flex items-center gap-1.5 hover:text-[var(--primary)] hover:underline text-left">
                       {u.full_name}
                       {u.is_super_admin && (
                         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-green-50 text-green-600">Principal</span>
                       )}
-                    </p>
+                    </button>
                     <p className="text-xs text-[var(--muted)] truncate">{u.email}</p>
                   </div>
                   {isSuperAdmin && !u.is_super_admin && u.id !== currentUserId && (
@@ -197,7 +198,7 @@ export default function AdminContent({ admins, animateurs, participants, collabo
               animateurs.map(user => (
                 <div key={user.id} className="flex items-center justify-between py-2 border-b border-[var(--border)] last:border-0">
                   <div>
-                    <p className="text-sm font-medium text-[var(--foreground)]">{user.full_name}</p>
+                    <button onClick={() => setSelectedUser(user)} className="text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:underline text-left">{user.full_name}</button>
                     <p className="text-xs text-[var(--muted)]">{user.email}</p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -243,7 +244,7 @@ export default function AdminContent({ admins, animateurs, participants, collabo
                     </span>
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-[var(--foreground)] truncate">{user.full_name}</p>
+                    <button onClick={() => setSelectedUser(user)} className="text-sm font-medium text-[var(--foreground)] truncate hover:text-[var(--primary)] hover:underline text-left">{user.full_name}</button>
                     <p className="text-xs text-[var(--muted)] truncate">{user.email}</p>
                   </div>
                 </div>
@@ -278,7 +279,7 @@ export default function AdminContent({ admins, animateurs, participants, collabo
                     </span>
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-[var(--foreground)] truncate">{user.full_name}</p>
+                    <button onClick={() => setSelectedUser(user)} className="text-sm font-medium text-[var(--foreground)] truncate hover:text-[var(--primary)] hover:underline text-left">{user.full_name}</button>
                     <p className="text-xs text-[var(--muted)] truncate">{user.email}</p>
                   </div>
                 </div>
@@ -294,6 +295,10 @@ export default function AdminContent({ admins, animateurs, participants, collabo
           )}
         </div>
       </Card>
+
+      {selectedUser && (
+        <UserContactModal user={selectedUser} onClose={() => setSelectedUser(null)} />
+      )}
 
       {userToDelete && (
         <DeleteConfirmModal
@@ -420,6 +425,80 @@ function DeleteConfirmModal({
           >
             {loading ? 'Suppression…' : 'Supprimer définitivement'}
           </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function UserContactModal({ user, onClose }: { user: User; onClose: () => void }) {
+  const roleLabel: Record<string, string> = {
+    admin: 'Administrateur',
+    animateur: 'Animateur',
+    collaborateur: 'Collaborateur',
+    participant: 'Inscrit',
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-sm bg-black/30 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 flex flex-col gap-4"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-[var(--primary-light)] flex items-center justify-center flex-shrink-0">
+              <span className="text-base font-bold text-[var(--primary)]">{user.full_name.charAt(0).toUpperCase()}</span>
+            </div>
+            <div>
+              <p className="font-bold text-[var(--foreground)]">{user.full_name}</p>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--border)] text-[var(--muted)]">
+                {roleLabel[user.role] ?? user.role}
+              </span>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--border)] text-[var(--muted)] transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Infos */}
+        <div className="flex flex-col gap-2.5 pt-2 border-t border-[var(--border)]">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-[var(--background)] border border-[var(--border)] flex items-center justify-center flex-shrink-0">
+              <Mail className="w-3.5 h-3.5 text-[var(--muted)]" />
+            </div>
+            <a href={`mailto:${user.email}`} className="text-sm text-[var(--primary)] hover:underline truncate">{user.email}</a>
+          </div>
+
+          {user.phone ? (
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-lg bg-[var(--background)] border border-[var(--border)] flex items-center justify-center flex-shrink-0">
+                <Phone className="w-3.5 h-3.5 text-[var(--muted)]" />
+              </div>
+              <a href={`tel:${user.phone}`} className="text-sm text-[var(--foreground)] hover:text-[var(--primary)] transition-colors">{user.phone}</a>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-lg bg-[var(--background)] border border-[var(--border)] flex items-center justify-center flex-shrink-0">
+                <Phone className="w-3.5 h-3.5 text-[var(--muted)]" />
+              </div>
+              <span className="text-sm text-[var(--muted)] italic">Aucun téléphone</span>
+            </div>
+          )}
+
+          {user.organisme ? (
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-lg bg-[var(--background)] border border-[var(--border)] flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-3.5 h-3.5 text-[var(--muted)]" />
+              </div>
+              <span className="text-sm text-[var(--foreground)]">{user.organisme}</span>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
