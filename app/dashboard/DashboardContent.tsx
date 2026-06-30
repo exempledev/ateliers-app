@@ -88,7 +88,7 @@ function AtelierRow({ atelier, onEdit }: { atelier: Atelier; onEdit: () => void 
     <Card className="p-4 flex items-center gap-4">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <Badge theme={atelier.theme} label={atelier.theme === 'travail' ? 'Travail' : 'Détente'} />
+          <Badge theme={atelier.theme} label={atelier.theme === 'travail' ? 'Professionnel' : 'Bien-Être'} />
           <span className="text-sm font-semibold text-[var(--foreground)] truncate">{atelier.title}</span>
         </div>
         <p className="text-xs text-[var(--muted)] capitalize">

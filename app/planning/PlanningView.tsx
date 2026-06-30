@@ -72,11 +72,11 @@ export default function PlanningView({ ateliers, userReservations, isLoggedIn, u
     <div className="flex items-center justify-center flex-wrap gap-4 sm:gap-6 mt-6 pt-4 border-t border-[var(--border)]">
       <div className="flex items-center gap-2">
         <span className="w-3 h-3 rounded-full bg-[var(--travail)]" />
-        <span className="text-xs text-[var(--muted)]">Atelier Travail</span>
+        <span className="text-xs text-[var(--muted)]">Atelier Professionnel</span>
       </div>
       <div className="flex items-center gap-2">
         <span className="w-3 h-3 rounded-full bg-[var(--detente)]" />
-        <span className="text-xs text-[var(--muted)]">Atelier Détente</span>
+        <span className="text-xs text-[var(--muted)]">Atelier Bien-Être</span>
       </div>
       <div className="flex items-center gap-2">
         <span className="w-3 h-3 rounded-full bg-[var(--accent)]" />

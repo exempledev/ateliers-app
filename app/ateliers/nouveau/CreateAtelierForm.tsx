@@ -124,8 +124,8 @@ export default function CreateAtelierForm({ profile, animateurs }: Props) {
                 value={form.theme}
                 onChange={e => set('theme', e.target.value)}
               >
-                <option value="travail">Travail</option>
-                <option value="detente">Détente</option>
+                <option value="travail">Professionnel</option>
+                <option value="detente">Bien-Être</option>
               </select>
             </div>
             <div className="flex flex-col gap-1.5">

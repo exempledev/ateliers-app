@@ -103,7 +103,7 @@ export default async function MonComptePage() {
                   <Card key={a.id} className="p-4 flex items-center gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge theme={a.theme} label={a.theme === 'travail' ? 'Travail' : 'Détente'} />
+                        <Badge theme={a.theme} label={a.theme === 'travail' ? 'Professionnel' : 'Bien-Être'} />
                         <span className="font-medium text-sm truncate">{a.title}</span>
                       </div>
                       <p className="text-xs text-[var(--muted)] capitalize">
@@ -136,7 +136,7 @@ export default async function MonComptePage() {
                 <Card key={r.id} className="p-4 flex items-center gap-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <Badge theme={r.ateliers.theme} label={r.ateliers.theme === 'travail' ? 'Travail' : 'Détente'} />
+                      <Badge theme={r.ateliers.theme} label={r.ateliers.theme === 'travail' ? 'Professionnel' : 'Bien-Être'} />
                       <span className="font-medium text-sm">{r.ateliers.title}</span>
                     </div>
                     <p className="text-xs text-[var(--muted)] capitalize">
@@ -161,7 +161,7 @@ export default async function MonComptePage() {
                 <Card key={r.id} className="p-3 flex items-center gap-3 opacity-60">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <Badge theme={r.ateliers.theme} label={r.ateliers.theme === 'travail' ? 'Travail' : 'Détente'} />
+                      <Badge theme={r.ateliers.theme} label={r.ateliers.theme === 'travail' ? 'Professionnel' : 'Bien-Être'} />
                       <span className="text-sm text-[var(--muted)]">{r.ateliers.title}</span>
                     </div>
                     <p className="text-xs text-[var(--muted)] capitalize">

@@ -109,8 +109,8 @@ export default async function AdminPage() {
   const themeCount = { travail: 0, detente: 0 }
   atelierData?.forEach(a => { a.theme === 'travail' ? themeCount.travail++ : themeCount.detente++ })
   const themeDistribution = [
-    { name: 'Travail', value: themeCount.travail, color: '#3b82f6' },
-    { name: 'Détente', value: themeCount.detente, color: '#10b981' },
+    { name: 'Professionnel', value: themeCount.travail, color: '#3b82f6' },
+    { name: 'Bien-Être', value: themeCount.detente, color: '#10b981' },
   ]
 
   return (
