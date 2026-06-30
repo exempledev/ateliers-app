@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Calendar, Clock, MapPin, ShieldCheck, ChevronLeft, CreditCard, ChevronRight, Loader2 } from 'lucide-react'
+import { X, Calendar, Clock, MapPin, ShieldCheck, ChevronLeft, CreditCard, ChevronRight } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { Atelier } from '@/types'
@@ -33,7 +33,6 @@ const PaypalLogo = ({ className }: { className?: string }) => (
 export default function PaymentModal({ atelier, onSuccess, onClose }: Props) {
   const [step, setStep] = useState<Step>('summary')
   const [method, setMethod] = useState<Method>('paypal')
-  const [paypalLoading, setPaypalLoading] = useState(false)
 
   const isTravail = atelier.theme === 'travail'
   const themeColor = isTravail ? 'var(--travail)' : 'var(--detente)'
@@ -43,19 +42,13 @@ export default function PaymentModal({ atelier, onSuccess, onClose }: Props) {
     catch { return atelier.date }
   })()
 
-  async function handlePaypalRedirect() {
-    setPaypalLoading(true)
-    const res = await fetch('/api/paypal/create-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ price: atelier.price, title: atelier.title, atelierId: atelier.id }),
+  function handlePaypalRedirect() {
+    const params = new URLSearchParams({
+      atelierId: atelier.id,
+      price: atelier.price.toFixed(2),
+      title: atelier.title,
     })
-    const { approveUrl } = await res.json()
-    if (approveUrl) {
-      window.location.href = approveUrl
-    } else {
-      setPaypalLoading(false)
-    }
+    window.location.href = `/api/paypal/checkout?${params}`
   }
 
   return (
@@ -201,12 +194,9 @@ export default function PaymentModal({ atelier, onSuccess, onClose }: Props) {
               {method === 'paypal' && (
                 <button
                   onClick={handlePaypalRedirect}
-                  disabled={paypalLoading}
-                  className="w-full py-3 rounded-xl bg-[#0070ba] text-white text-sm font-semibold hover:bg-[#005ea6] transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+                  className="w-full py-3 rounded-xl bg-[#0070ba] text-white text-sm font-semibold hover:bg-[#005ea6] transition-colors flex items-center justify-center gap-2"
                 >
-                  {paypalLoading
-                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection en cours…</>
-                    : <><PaypalLogo className="w-4 h-4" /> Payer avec PayPal</>}
+                  <PaypalLogo className="w-4 h-4" /> Payer avec PayPal
                 </button>
               )}
               {method === 'card' && (
