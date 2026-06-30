@@ -37,17 +37,16 @@ export async function GET(req: NextRequest) {
     })
 
     const order = await res.json()
-    console.log('[PayPal] order:', JSON.stringify(order))
-
     const approveUrl = order.links?.find((l: { rel: string; href: string }) => l.rel === 'approve')?.href
-    console.log('[PayPal] approveUrl:', approveUrl)
-    console.log('[PayPal] siteUrl:', siteUrl)
 
-    if (!approveUrl) return NextResponse.redirect(`${siteUrl}/planning`)
+    if (!approveUrl) {
+      const err = encodeURIComponent(JSON.stringify(order).slice(0, 200))
+      return NextResponse.redirect(`${siteUrl}/planning?pp_err=${err}`)
+    }
 
     return NextResponse.redirect(approveUrl)
   } catch (err) {
-    console.error('[PayPal] erreur:', err)
-    return NextResponse.redirect(`${siteUrl}/planning`)
+    const msg = encodeURIComponent(String(err).slice(0, 200))
+    return NextResponse.redirect(`${siteUrl}/planning?pp_err=${msg}`)
   }
 }
