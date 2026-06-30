@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Bell, X, User, Calendar, CreditCard, UserCheck, Building2, Mail, Phone, MapPin, Globe, FileText } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { format, parseISO } from 'date-fns'
@@ -141,10 +142,10 @@ export default function NotificationBell() {
         )}
       </div>
 
-      {/* Modale de détail */}
-      {selected && (
+      {/* Modale de détail — via Portal pour éviter le stacking context de la navbar */}
+      {selected && createPortal(
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-sm bg-black/30 p-4"
+          className="fixed inset-0 z-[200] flex items-center justify-center backdrop-blur-sm bg-black/30 p-4"
           onClick={() => setSelected(null)}
         >
           <div
@@ -234,7 +235,7 @@ export default function NotificationBell() {
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
     </>
   )
 }
