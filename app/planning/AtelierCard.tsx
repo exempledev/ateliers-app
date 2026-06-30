@@ -197,20 +197,22 @@ export default function AtelierCard({ atelier, isReserved, isLoggedIn, userRole,
 
           <div className="mt-auto">
             {price > 0 && (
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs text-[var(--muted)]">Tarif</span>
-                {!isLoggedIn ? (
-                  <div className="flex flex-col items-end">
+              <div className="mb-2 flex flex-col gap-0.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[var(--muted)]">Tarif</span>
+                  {!isLoggedIn ? (
                     <span className="text-sm font-bold text-[var(--primary)]">{price.toFixed(2)} €</span>
-                    <span className="text-[10px] text-[var(--muted)] italic">tarif non adhérent</span>
-                  </div>
-                ) : userRole === 'collaborateur' ? (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-[var(--muted)] line-through">{price.toFixed(2)} €</span>
-                    <span className="text-xs font-bold text-green-600">Gratuit</span>
-                  </div>
-                ) : (
-                  <span className="text-sm font-bold text-[var(--primary)]">{price.toFixed(2)} €</span>
+                  ) : userRole === 'collaborateur' ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-[var(--muted)] line-through">{price.toFixed(2)} €</span>
+                      <span className="text-xs font-bold text-green-600">Gratuit</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm font-bold text-[var(--primary)]">{price.toFixed(2)} €</span>
+                  )}
+                </div>
+                {!isLoggedIn && (
+                  <p className="text-[10px] text-[var(--muted)] italic text-right">tarif non adhérent</p>
                 )}
               </div>
             )}
