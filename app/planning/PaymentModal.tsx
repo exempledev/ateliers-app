@@ -47,7 +47,7 @@ export default function PaymentModal({ atelier, onSuccess, onClose, paypalClient
   return (
     <PayPalScriptProvider options={{ clientId: paypalClientId, currency: 'EUR', locale: 'fr_FR' }}>
       <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div className="animate-slide-up bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
+        <div className="animate-slide-up bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col" style={{ isolation: 'isolate' }}>
 
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] relative">
