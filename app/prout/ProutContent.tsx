@@ -98,12 +98,17 @@ function AnimateurForm() {
 
     if (err) { setError('Une erreur est survenue.'); setLoading(false); return }
 
-    // Notification admin
     await supabase.from('notifications').insert({
-      type: 'new_user',
+      type: 'candidature_animateur',
       title: 'Candidature animateur',
       message: `${form.nom} souhaite devenir animateur d'ateliers.`,
-      metadata: { email: form.email },
+      metadata: {
+        nom: form.nom,
+        email: form.email,
+        telephone: form.telephone,
+        specialite: form.specialite,
+        motivation: form.motivation,
+      },
     })
 
     setSuccess(true)
@@ -179,10 +184,17 @@ function EntrepriseForm() {
     if (err) { setError('Une erreur est survenue.'); setLoading(false); return }
 
     await supabase.from('notifications').insert({
-      type: 'new_user',
+      type: 'candidature_entreprise',
       title: 'Demande entreprise partenaire',
       message: `${form.nom} souhaite rejoindre les entreprises partenaires.`,
-      metadata: { email: form.email },
+      metadata: {
+        nom: form.nom,
+        email: form.email,
+        telephone: form.telephone,
+        adresse: form.adresse,
+        site_web: form.site_web,
+        description: form.description,
+      },
     })
 
     setSuccess(true)
