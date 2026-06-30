@@ -33,7 +33,7 @@ export default function HomePage() {
               <motion.div variants={fadeUp}>
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-sm font-medium mb-6">
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] animate-pulse" />
-                  2 ateliers par semaine
+                  8 ateliers par mois
                 </span>
               </motion.div>
 
@@ -78,7 +78,7 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
             <div className="flex justify-center divide-x divide-[var(--border)]">
               {[
-                { value: '2', label: 'ateliers par semaine' },
+                { value: '8', label: 'ateliers par mois' },
                 { value: '10–15', label: 'places par atelier' },
               ].map(({ value, label }) => (
                 <div key={label} className="text-center px-4 py-2">

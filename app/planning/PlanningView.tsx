@@ -189,8 +189,6 @@ export default function PlanningView({ ateliers, userReservations, isLoggedIn, u
   }
 
   /* ── VUE MOIS ── */
-  const daysWithAteliers = monthDays.filter(day => getAteliersForDay(day).length > 0)
-
   return (
     <div>
       {/* Navigation */}
@@ -206,22 +204,12 @@ export default function PlanningView({ ateliers, userReservations, isLoggedIn, u
             {format(currentMonth, 'MMMM yyyy', { locale: fr })}
           </p>
           <p className="text-xs text-[var(--muted)] mt-0.5 flex items-center justify-center gap-2">
-            {isCurrentMonth && (
-              <button
-                onClick={toggleView}
-                className="px-2 py-0.5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] font-medium hover:bg-[var(--primary)] hover:text-white transition-colors"
-              >
-                Ce mois-ci
-              </button>
-            )}
-            {!isCurrentMonth && (
-              <button
-                onClick={toggleView}
-                className="px-2 py-0.5 rounded-full bg-[var(--border)] text-[var(--muted)] font-medium hover:bg-[var(--primary-light)] hover:text-[var(--primary)] transition-colors"
-              >
-                Vue mois
-              </button>
-            )}
+            <button
+              onClick={toggleView}
+              className="px-2 py-0.5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] font-medium hover:bg-[var(--primary)] hover:text-white transition-colors"
+            >
+              {isCurrentMonth ? 'Ce mois-ci' : 'Vue mois'}
+            </button>
           </p>
         </div>
         <button
@@ -232,42 +220,52 @@ export default function PlanningView({ ateliers, userReservations, isLoggedIn, u
         </button>
       </div>
 
-      {/* Liste des jours avec ateliers */}
-      {daysWithAteliers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="text-[var(--muted)] text-sm">Aucun atelier ce mois-ci</p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-6">
-          {daysWithAteliers.map(day => {
-            const dayAteliers = getAteliersForDay(day)
-            const todayDay = isToday(day)
-            const dayIndex = (day.getDay() + 6) % 7
-            return (
-              <div key={day.toISOString()}>
-                <div className="flex items-center gap-2 mb-3 px-1">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-bold ${
-                    todayDay ? 'bg-[var(--primary)] text-white' : 'bg-[var(--border)] text-[var(--muted)]'
-                  }`}>
-                    {format(day, 'd')}
-                  </div>
-                  <div>
-                    <p className={`text-sm font-semibold capitalize ${todayDay ? 'text-[var(--primary)]' : 'text-[var(--foreground)]'}`}>
-                      {DAY_NAMES_FULL[dayIndex]}
-                    </p>
-                    <p className="text-xs text-[var(--muted)]">
+      {/* Tous les jours du mois */}
+      <div className="flex flex-col gap-3">
+        {monthDays.map(day => {
+          const dayAteliers = getAteliersForDay(day)
+          const todayDay = isToday(day)
+          const dayIndex = (day.getDay() + 6) % 7
+
+          return (
+            <div key={day.toISOString()} className={`rounded-2xl border overflow-hidden ${
+              todayDay ? 'border-[var(--primary)]' : 'border-[var(--border)]'
+            }`}>
+              {/* En-tête du jour */}
+              <div className={`flex items-center gap-3 px-4 py-3 ${
+                todayDay ? 'bg-[var(--primary)]' : 'bg-white'
+              }`}>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm font-bold ${
+                  todayDay ? 'bg-white/20 text-white' : 'bg-[var(--border)] text-[var(--muted)]'
+                }`}>
+                  {format(day, 'd')}
+                </div>
+                <div className="flex-1">
+                  <p className={`text-sm font-semibold capitalize ${todayDay ? 'text-white' : 'text-[var(--foreground)]'}`}>
+                    {DAY_NAMES_FULL[dayIndex]}
+                  </p>
+                  {dayAteliers.length > 0 && (
+                    <p className={`text-xs ${todayDay ? 'text-white/70' : 'text-[var(--muted)]'}`}>
                       {dayAteliers.length} atelier{dayAteliers.length > 1 ? 's' : ''}
                     </p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {dayAteliers.map(a => atelierCard(a))}
+                  )}
                 </div>
               </div>
-            )
-          })}
-        </div>
-      )}
+
+              {/* Ateliers ou vide */}
+              {dayAteliers.length > 0 ? (
+                <div className="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 bg-[var(--background)]">
+                  {dayAteliers.map(a => atelierCard(a))}
+                </div>
+              ) : (
+                <div className="px-4 py-3 bg-[var(--background)]">
+                  <p className="text-xs text-[var(--muted)] opacity-50">Aucun atelier</p>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
 
       {legend}
     </div>
