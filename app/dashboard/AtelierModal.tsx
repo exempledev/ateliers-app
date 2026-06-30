@@ -94,7 +94,7 @@ export default function AtelierModal({ atelier, animateurId, onClose }: Props) {
                 onChange={e => set('theme', e.target.value)}
               >
                 <option value="travail">Professionnel</option>
-                <option value="detente">Bien-Être</option>
+                <option value="detente">Détente</option>
               </select>
             </div>
             <div className="flex flex-col gap-1.5">

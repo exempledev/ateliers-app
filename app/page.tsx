@@ -121,7 +121,7 @@ export default function HomePage() {
               <div className="w-11 h-11 rounded-xl bg-[var(--detente)] flex items-center justify-center mb-5">
                 <Leaf className="w-5 h-5 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">Ateliers Bien-Être</h3>
+              <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">Ateliers Détente</h3>
               <p className="text-sm text-[var(--muted)] leading-relaxed mb-5">
                 Relaxation, pleine conscience, cohésion d'équipe — pour recharger les batteries et cultiver le bien-être au travail.
               </p>
