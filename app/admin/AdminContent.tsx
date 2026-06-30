@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, X, ShieldCheck, Trash2, AlertTriangle, UserPlus, Search, Loader2, Phone, Mail, Building2, User as UserIcon } from 'lucide-react'
+import { Check, X, ShieldCheck, Trash2, AlertTriangle, UserPlus, Search, Loader2, Phone, Mail, Building2, User as UserIcon, Download } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Card from '@/components/ui/Card'
 import type { User } from '@/types'
@@ -48,6 +48,19 @@ export default function AdminContent({ admins, animateurs, participants, collabo
     setSearchQuery('')
     setSearchResults([])
     router.refresh()
+  }
+
+  async function exportEmails() {
+    const { data } = await supabase.from('users').select('email').order('email')
+    if (!data) return
+    const emails = data.map(u => u.email).join(' ')
+    const blob = new Blob([emails], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `emails-${new Date().toISOString().split('T')[0]}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   async function demoteAdmin(userId: string) {
@@ -295,6 +308,19 @@ export default function AdminContent({ admins, animateurs, participants, collabo
           )}
         </div>
       </Card>
+
+      {/* Export emails — super admin uniquement */}
+      {isSuperAdmin && (
+        <div className="flex justify-end mt-6">
+          <button
+            onClick={exportEmails}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--background)] transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Exporter les emails
+          </button>
+        </div>
+      )}
 
       {selectedUser && (
         <UserContactModal user={selectedUser} onClose={() => setSelectedUser(null)} />
