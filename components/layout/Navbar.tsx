@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronDown, User, LogOut, LayoutDashboard, Users, CreditCard, Building2, CalendarPlus, Menu, X, Bell } from 'lucide-react'
+import { ChevronDown, User, LogOut, LayoutDashboard, Users, CreditCard, Building2, CalendarPlus, Menu, X } from 'lucide-react'
+import NotificationBell from './NotificationBell'
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -171,12 +172,7 @@ export default function Navbar() {
             ))}
 
             {/* Cloche notifications — admin uniquement */}
-            {loaded && role === 'admin' && (
-              <button className="relative p-2 rounded-xl hover:bg-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors ml-1">
-                <Bell className="w-4 h-4" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
-              </button>
-            )}
+            {loaded && role === 'admin' && <NotificationBell />}
 
             {loaded && role && (
               <div className="relative ml-2" ref={accountRef}>
