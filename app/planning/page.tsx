@@ -49,7 +49,6 @@ export default async function PlanningPage() {
           isLoggedIn={!!user}
           userRole={userRole}
           userId={user?.id ?? null}
-          paypalClientId={process.env.PAYPAL_CLIENT_ID ?? ''}
         />
       </main>
     </>

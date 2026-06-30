@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
-import { X, Calendar, Clock, MapPin, ShieldCheck, ChevronLeft, CreditCard, ChevronRight } from 'lucide-react'
+import { X, Calendar, Clock, MapPin, ShieldCheck, ChevronLeft, CreditCard, ChevronRight, Loader2 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { Atelier } from '@/types'
@@ -20,7 +19,6 @@ interface Props {
   atelier: AtelierForPayment
   onSuccess: () => void
   onClose: () => void
-  paypalClientId: string
 }
 
 type Step = 'summary' | 'payment'
@@ -32,9 +30,10 @@ const PaypalLogo = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export default function PaymentModal({ atelier, onSuccess, onClose, paypalClientId }: Props) {
+export default function PaymentModal({ atelier, onSuccess, onClose }: Props) {
   const [step, setStep] = useState<Step>('summary')
   const [method, setMethod] = useState<Method>('paypal')
+  const [paypalLoading, setPaypalLoading] = useState(false)
 
   const isTravail = atelier.theme === 'travail'
   const themeColor = isTravail ? 'var(--travail)' : 'var(--detente)'
@@ -44,211 +43,198 @@ export default function PaymentModal({ atelier, onSuccess, onClose, paypalClient
     catch { return atelier.date }
   })()
 
+  async function handlePaypalRedirect() {
+    setPaypalLoading(true)
+    const res = await fetch('/api/paypal/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ price: atelier.price, title: atelier.title, atelierId: atelier.id }),
+    })
+    const { approveUrl } = await res.json()
+    if (approveUrl) {
+      window.location.href = approveUrl
+    } else {
+      setPaypalLoading(false)
+    }
+  }
+
   return (
-    <PayPalScriptProvider options={{ clientId: paypalClientId, currency: 'EUR', locale: 'fr_FR' }}>
-      <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div className="animate-slide-up bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col" style={{ isolation: 'isolate' }}>
+    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="animate-slide-up bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col">
 
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] relative">
-            {step === 'payment' && (
-              <button
-                onClick={() => setStep('summary')}
-                className="flex items-center gap-1 text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Retour
-              </button>
-            )}
-            <span className={`text-sm font-semibold text-[var(--foreground)] ${step === 'summary' ? '' : 'absolute left-1/2 -translate-x-1/2'}`}>
-              {step === 'summary' ? 'Confirmer la réservation' : 'Moyen de paiement'}
-            </span>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] relative">
+          {step === 'payment' && (
             <button
-              onClick={onClose}
-              className="ml-auto p-1.5 rounded-lg hover:bg-[var(--background)] text-[var(--muted)] transition-colors"
+              onClick={() => setStep('summary')}
+              className="flex items-center gap-1 text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
             >
-              <X className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4" />
+              Retour
             </button>
-          </div>
+          )}
+          <span className={`text-sm font-semibold text-[var(--foreground)] ${step === 'summary' ? '' : 'absolute left-1/2 -translate-x-1/2'}`}>
+            {step === 'summary' ? 'Confirmer la réservation' : 'Moyen de paiement'}
+          </span>
+          <button
+            onClick={onClose}
+            className="ml-auto p-1.5 rounded-lg hover:bg-[var(--background)] text-[var(--muted)] transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
-          {/* ── ÉTAPE 1 : Récapitulatif ── */}
-          {step === 'summary' && (
-            <>
-              <div className="px-6 py-5 flex flex-col gap-4">
-                {/* Atelier */}
-                <div className="rounded-xl border border-[var(--border)] overflow-hidden">
-                  <div className="h-1" style={{ background: themeColor }} />
-                  <div className="p-4">
-                    <span className="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full text-white mb-2" style={{ background: themeColor }}>
-                      {isTravail ? 'Travail' : 'Détente'}
-                    </span>
-                    <h3 className="font-bold text-[var(--foreground)] mb-3">{atelier.title}</h3>
-                    <div className="flex flex-col gap-2">
+        {/* ── ÉTAPE 1 : Récapitulatif ── */}
+        {step === 'summary' && (
+          <>
+            <div className="px-6 py-5 flex flex-col gap-4">
+              <div className="rounded-xl border border-[var(--border)] overflow-hidden">
+                <div className="h-1" style={{ background: themeColor }} />
+                <div className="p-4">
+                  <span className="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full text-white mb-2" style={{ background: themeColor }}>
+                    {isTravail ? 'Travail' : 'Détente'}
+                  </span>
+                  <h3 className="font-bold text-[var(--foreground)] mb-3">{atelier.title}</h3>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2.5 text-sm text-[var(--muted)]">
+                      <Calendar className="w-4 h-4 flex-shrink-0" style={{ color: themeColor }} />
+                      <span className="capitalize">{dateFormatted}</span>
+                    </div>
+                    <div className="flex items-center gap-2.5 text-sm text-[var(--muted)]">
+                      <Clock className="w-4 h-4 flex-shrink-0" style={{ color: themeColor }} />
+                      <span>{atelier.start_time.slice(0, 5)} – {atelier.end_time.slice(0, 5)}</span>
+                    </div>
+                    {atelier.location && (
                       <div className="flex items-center gap-2.5 text-sm text-[var(--muted)]">
-                        <Calendar className="w-4 h-4 flex-shrink-0" style={{ color: themeColor }} />
-                        <span className="capitalize">{dateFormatted}</span>
+                        <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: themeColor }} />
+                        <span>{atelier.location}</span>
                       </div>
-                      <div className="flex items-center gap-2.5 text-sm text-[var(--muted)]">
-                        <Clock className="w-4 h-4 flex-shrink-0" style={{ color: themeColor }} />
-                        <span>{atelier.start_time.slice(0, 5)} – {atelier.end_time.slice(0, 5)}</span>
-                      </div>
-                      {atelier.location && (
-                        <div className="flex items-center gap-2.5 text-sm text-[var(--muted)]">
-                          <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: themeColor }} />
-                          <span>{atelier.location}</span>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
-                </div>
-
-                {/* Animateur */}
-                {atelier.users?.full_name && (
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--background)] border border-[var(--border)]">
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white text-sm font-bold" style={{ background: themeColor }}>
-                      {atelier.users.full_name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[var(--foreground)]">{atelier.users.full_name}</p>
-                      <p className="text-xs text-[var(--muted)]">{atelier.users.organisme ?? atelier.users.email ?? 'Animateur'}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Total */}
-                <div className="flex items-center justify-between px-4 py-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
-                  <span className="text-sm font-medium text-[var(--foreground)]">Total à régler</span>
-                  <span className="text-2xl font-bold" style={{ color: themeColor }}>{atelier.price.toFixed(2)} €</span>
                 </div>
               </div>
 
-              {/* Footer step 1 */}
-              <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--border)] bg-[var(--background)]">
-                <button onClick={onClose} className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
-                  Annuler
+              {atelier.users?.full_name && (
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--background)] border border-[var(--border)]">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white text-sm font-bold" style={{ background: themeColor }}>
+                    {atelier.users.full_name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--foreground)]">{atelier.users.full_name}</p>
+                    <p className="text-xs text-[var(--muted)]">{atelier.users.organisme ?? atelier.users.email ?? 'Animateur'}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between px-4 py-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <span className="text-sm font-medium text-[var(--foreground)]">Total à régler</span>
+                <span className="text-2xl font-bold" style={{ color: themeColor }}>{atelier.price.toFixed(2)} €</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--border)] bg-[var(--background)]">
+              <button onClick={onClose} className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
+                Annuler
+              </button>
+              <div className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Sécurisé
+              </div>
+              <button
+                onClick={() => setStep('payment')}
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                style={{ background: themeColor }}
+              >
+                Continuer <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* ── ÉTAPE 2 : Paiement ── */}
+        {step === 'payment' && (
+          <>
+            <div className="px-6 py-5 flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-2">
+                {(['card', 'paypal'] as Method[]).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setMethod(m)}
+                    className={`flex flex-col items-center gap-1.5 py-3 px-4 rounded-xl border text-sm font-medium transition-all ${
+                      method === m
+                        ? 'border-[var(--primary)] bg-[var(--primary)] text-white'
+                        : 'border-[var(--border)] text-[var(--muted)] hover:bg-[var(--background)]'
+                    }`}
+                  >
+                    {m === 'card' ? <CreditCard className="w-5 h-5" /> : <PaypalLogo className="w-5 h-5" />}
+                    {m === 'card' ? 'Carte bancaire' : 'PayPal'}
+                  </button>
+                ))}
+              </div>
+
+              {method === 'card' && (
+                <div className="rounded-xl border border-[var(--border)] p-4 flex items-start gap-3 bg-[var(--background)]">
+                  <CreditCard className="w-8 h-8 text-[var(--muted)] flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--foreground)]">Carte bancaire</p>
+                    <p className="text-xs text-[var(--muted)] mt-1 leading-relaxed">Bientôt disponible — utilisez PayPal pour le moment.</p>
+                  </div>
+                </div>
+              )}
+
+              {method === 'paypal' && (
+                <div className="rounded-xl border border-[var(--border)] p-4 flex items-start gap-3 bg-[var(--background)]">
+                  <div className="w-9 h-9 rounded-lg bg-[#003087] flex items-center justify-center flex-shrink-0">
+                    <PaypalLogo className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--foreground)]">Compte PayPal</p>
+                    <p className="text-xs text-[var(--muted)] mt-1 leading-relaxed">
+                      Vous serez redirigé vers PayPal pour finaliser votre paiement de {atelier.price.toFixed(2)} € en toute sécurité.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-3 px-6 py-4 border-t border-[var(--border)] bg-[var(--background)]">
+              {method === 'paypal' && (
+                <button
+                  onClick={handlePaypalRedirect}
+                  disabled={paypalLoading}
+                  className="w-full py-3 rounded-xl bg-[#0070ba] text-white text-sm font-semibold hover:bg-[#005ea6] transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+                >
+                  {paypalLoading
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection en cours…</>
+                    : <><PaypalLogo className="w-4 h-4" /> Payer avec PayPal</>}
+                </button>
+              )}
+              {method === 'card' && (
+                <button
+                  disabled
+                  className="w-full py-3 rounded-xl bg-[var(--border)] text-[var(--muted)] text-sm font-medium cursor-not-allowed"
+                >
+                  Bientôt disponible
+                </button>
+              )}
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setStep('summary')}
+                  className="flex items-center gap-1 text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Retour
                 </button>
                 <div className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   Sécurisé
                 </div>
-                <button
-                  onClick={() => setStep('payment')}
-                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-                  style={{ background: themeColor }}
-                >
-                  Continuer <ChevronRight className="w-4 h-4" />
-                </button>
               </div>
-            </>
-          )}
+            </div>
+          </>
+        )}
 
-          {/* ── ÉTAPE 2 : Paiement ── */}
-          {step === 'payment' && (
-            <>
-              <div className="px-6 py-5 flex flex-col gap-4">
-                {/* Tabs */}
-                <div className="grid grid-cols-2 gap-2">
-                  {(['card', 'paypal'] as Method[]).map((m) => (
-                    <button
-                      key={m}
-                      onClick={() => setMethod(m)}
-                      className={`flex flex-col items-center gap-1.5 py-3 px-4 rounded-xl border text-sm font-medium transition-all ${
-                        method === m
-                          ? 'border-[var(--primary)] bg-[var(--primary)] text-white'
-                          : 'border-[var(--border)] text-[var(--muted)] hover:bg-[var(--background)]'
-                      }`}
-                    >
-                      {m === 'card' ? <CreditCard className="w-5 h-5" /> : <PaypalLogo className="w-5 h-5" />}
-                      {m === 'card' ? 'Carte bancaire' : 'PayPal'}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Info box */}
-                {method === 'card' && (
-                  <div className="rounded-xl border border-[var(--border)] p-4 flex items-start gap-3 bg-[var(--background)]">
-                    <CreditCard className="w-8 h-8 text-[var(--muted)] flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-semibold text-[var(--foreground)]">Carte bancaire</p>
-                      <p className="text-xs text-[var(--muted)] mt-1 leading-relaxed">Bientôt disponible — utilisez PayPal pour le moment.</p>
-                    </div>
-                  </div>
-                )}
-
-                {method === 'paypal' && (
-                  <div className="rounded-xl border border-[var(--border)] p-4 flex items-start gap-3 bg-[var(--background)]">
-                    <div className="w-9 h-9 rounded-lg bg-[#003087] flex items-center justify-center flex-shrink-0">
-                      <PaypalLogo className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[var(--foreground)]">Compte PayPal</p>
-                      <p className="text-xs text-[var(--muted)] mt-1 leading-relaxed">
-                        Après confirmation, vous serez guidé sur PayPal pour finaliser votre paiement de {atelier.price.toFixed(2)} € en toute sécurité.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer step 2 — bouton PayPal intégré */}
-              <div className="flex flex-col gap-3 px-6 py-4 border-t border-[var(--border)] bg-[var(--background)]">
-                {/* Bouton PayPal pleine largeur */}
-                <div className="w-full">
-                  {method === 'paypal' && (
-                    <PayPalButtons
-                      fundingSource="paypal"
-                      style={{ height: 44, shape: 'rect', label: 'pay', tagline: false }}
-                      createOrder={async () => {
-                        const res = await fetch('/api/paypal/create-order', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ price: atelier.price, title: atelier.title }),
-                        })
-                        const { id } = await res.json()
-                        return id
-                      }}
-                      onApprove={async (data) => {
-                        const res = await fetch('/api/paypal/capture-order', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ orderId: data.orderID, atelierId: atelier.id }),
-                        })
-                        const result = await res.json()
-                        if (result.success) onSuccess()
-                      }}
-                      onError={() => {}}
-                    />
-                  )}
-                  {method === 'card' && (
-                    <button
-                      disabled
-                      className="w-full py-2.5 rounded-xl bg-[var(--border)] text-[var(--muted)] text-sm font-medium cursor-not-allowed"
-                    >
-                      Bientôt disponible
-                    </button>
-                  )}
-                </div>
-
-                {/* Retour + Sécurisé */}
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={() => setStep('summary')}
-                    className="flex items-center gap-1 text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    Retour
-                  </button>
-                  <div className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    Sécurisé
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-        </div>
       </div>
-    </PayPalScriptProvider>
+    </div>
   )
 }
