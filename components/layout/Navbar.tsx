@@ -65,6 +65,7 @@ export default function Navbar() {
     : role === 'animateur'
     ? [
         { href: '/dashboard', label: 'Tableau de bord' },
+        { href: '/ateliers/nouveau', label: 'Créer un atelier' },
         { href: '/planning', label: 'Planning' },
         { href: '/entreprises', label: 'Entreprises' },
         actualitesLink,

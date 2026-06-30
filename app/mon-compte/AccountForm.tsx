@@ -31,6 +31,7 @@ export default function AccountForm({ currentEmail, currentName, currentPhone, c
   const [bioLoading, setBioLoading] = useState(false)
 
   const [editingPassword, setEditingPassword] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordLoading, setPasswordLoading] = useState(false)
@@ -73,8 +74,12 @@ export default function AccountForm({ currentEmail, currentName, currentPhone, c
 
   async function savePassword() {
     setPasswordMessage(null)
+    if (!currentPassword) {
+      setPasswordMessage({ text: 'Veuillez saisir votre mot de passe actuel.', ok: false })
+      return
+    }
     if (newPassword.length < 6) {
-      setPasswordMessage({ text: 'Le mot de passe doit contenir au moins 6 caractères.', ok: false })
+      setPasswordMessage({ text: 'Le nouveau mot de passe doit contenir au moins 6 caractères.', ok: false })
       return
     }
     if (newPassword !== confirmPassword) {
@@ -82,12 +87,24 @@ export default function AccountForm({ currentEmail, currentName, currentPhone, c
       return
     }
     setPasswordLoading(true)
+    // Vérification de l'identité
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: currentPassword,
+    })
+    if (signInError) {
+      setPasswordMessage({ text: 'Mot de passe actuel incorrect.', ok: false })
+      setPasswordLoading(false)
+      return
+    }
+    // Mise à jour du mot de passe
     const { error } = await supabase.auth.updateUser({ password: newPassword })
     setPasswordLoading(false)
     if (error) {
       setPasswordMessage({ text: error.message, ok: false })
     } else {
       setPasswordMessage({ text: 'Mot de passe mis à jour avec succès.', ok: true })
+      setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
       setEditingPassword(false)
@@ -371,10 +388,17 @@ export default function AccountForm({ currentEmail, currentName, currentPhone, c
           <div className="flex flex-col gap-2">
             <input
               type="password"
+              value={currentPassword}
+              onChange={e => setCurrentPassword(e.target.value)}
+              placeholder="Mot de passe actuel"
+              autoFocus
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition"
+            />
+            <input
+              type="password"
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
               placeholder="Nouveau mot de passe"
-              autoFocus
               className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition"
             />
             <input
@@ -392,7 +416,7 @@ export default function AccountForm({ currentEmail, currentName, currentPhone, c
             )}
             <div className="flex gap-2 justify-end">
               <button
-                onClick={() => { setEditingPassword(false); setNewPassword(''); setConfirmPassword(''); setPasswordMessage(null) }}
+                onClick={() => { setEditingPassword(false); setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setPasswordMessage(null) }}
                 className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs font-medium text-[var(--muted)] hover:bg-[var(--background)] transition-colors"
               >
                 Annuler

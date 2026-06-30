@@ -14,7 +14,7 @@ export default async function NouvelAtelierPage() {
     .eq('id', user.id)
     .single()
 
-  if (!profile || profile.role !== 'admin') redirect('/planning')
+  if (!profile || !['admin', 'animateur'].includes(profile.role)) redirect('/planning')
 
   let animateurs: { id: string; full_name: string; email: string }[] = []
   if (profile.role === 'admin') {
@@ -22,7 +22,6 @@ export default async function NouvelAtelierPage() {
       .from('users')
       .select('id, full_name, email')
       .in('role', ['animateur', 'admin'])
-      .eq('is_active', true)
       .order('full_name')
     animateurs = data ?? []
   }
