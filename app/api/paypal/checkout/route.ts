@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   const atelierId = searchParams.get('atelierId')
   const price = searchParams.get('price')
   const title = searchParams.get('title') ?? 'Atelier'
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const siteUrl = process.env.SITE_URL ?? 'http://localhost:3000'
 
   if (!atelierId || !price) {
     return NextResponse.redirect(`${siteUrl}/planning`)
@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const token = await getPaypalAccessToken()
+    console.log('[PayPal] token obtenu:', !!token)
 
     const res = await fetch(`${PAYPAL_BASE}/v2/checkout/orders`, {
       method: 'POST',
@@ -36,12 +37,17 @@ export async function GET(req: NextRequest) {
     })
 
     const order = await res.json()
+    console.log('[PayPal] order:', JSON.stringify(order))
+
     const approveUrl = order.links?.find((l: { rel: string; href: string }) => l.rel === 'approve')?.href
+    console.log('[PayPal] approveUrl:', approveUrl)
+    console.log('[PayPal] siteUrl:', siteUrl)
 
     if (!approveUrl) return NextResponse.redirect(`${siteUrl}/planning`)
 
     return NextResponse.redirect(approveUrl)
-  } catch {
+  } catch (err) {
+    console.error('[PayPal] erreur:', err)
     return NextResponse.redirect(`${siteUrl}/planning`)
   }
 }
