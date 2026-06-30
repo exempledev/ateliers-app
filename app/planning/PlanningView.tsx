@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isToday, parseISO, isSameWeek } from 'date-fns'
+import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isToday, parseISO, isSameWeek, startOfMonth, endOfMonth, addMonths, subMonths, isSameMonth, eachDayOfInterval } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import AtelierCard from './AtelierCard'
@@ -18,14 +18,33 @@ interface Props {
 const DAY_NAMES = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 const DAY_NAMES_FULL = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
 
+type ViewMode = 'week' | 'month'
+
 export default function PlanningView({ ateliers, userReservations, isLoggedIn, userRole, userId }: Props) {
   const [currentWeek, setCurrentWeek] = useState(new Date())
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [viewMode, setViewMode] = useState<ViewMode>('week')
+
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 })
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
   const isCurrentWeek = isSameWeek(currentWeek, new Date(), { weekStartsOn: 1 })
 
+  const monthStart = startOfMonth(currentMonth)
+  const monthEnd = endOfMonth(currentMonth)
+  const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd })
+  const isCurrentMonth = isSameMonth(currentMonth, new Date())
+
   const getAteliersForDay = (day: Date) =>
     ateliers.filter(a => isSameDay(parseISO(a.date), day))
+
+  function toggleView() {
+    if (viewMode === 'week') {
+      setCurrentMonth(currentWeek)
+      setViewMode('month')
+    } else {
+      setViewMode('week')
+    }
+  }
 
   const atelierCard = (atelier: Atelier) => (
     <AtelierCard
@@ -38,36 +57,6 @@ export default function PlanningView({ ateliers, userReservations, isLoggedIn, u
       canEdit={userRole === 'admin'}
       canDelete={userRole === 'admin' || (userRole === 'animateur' && atelier.animateur_id === userId)}
     />
-  )
-
-  const nav = (
-    <div className="flex items-center justify-between mb-6 bg-white rounded-2xl border border-[var(--border)] px-4 py-3 sm:px-5 sm:py-4">
-      <button
-        onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}
-        className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[var(--background)] transition-colors border border-[var(--border)]"
-      >
-        <ChevronLeft className="w-4 h-4 text-[var(--muted)]" />
-      </button>
-      <div className="text-center">
-        <p className="text-base sm:text-lg font-bold text-[var(--foreground)] capitalize">
-          {format(weekStart, 'MMMM yyyy', { locale: fr })}
-        </p>
-        <p className="text-xs text-[var(--muted)] mt-0.5">
-          {format(weekStart, 'd')} – {format(addDays(weekStart, 6), 'd MMMM', { locale: fr })}
-          {isCurrentWeek && (
-            <span className="ml-2 px-2 py-0.5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] font-medium">
-              Cette semaine
-            </span>
-          )}
-        </p>
-      </div>
-      <button
-        onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}
-        className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[var(--background)] transition-colors border border-[var(--border)]"
-      >
-        <ChevronRight className="w-4 h-4 text-[var(--muted)]" />
-      </button>
-    </div>
   )
 
   const legend = (
@@ -93,79 +82,192 @@ export default function PlanningView({ ateliers, userReservations, isLoggedIn, u
     </div>
   )
 
+  /* ── VUE SEMAINE ── */
+  if (viewMode === 'week') {
+    return (
+      <div>
+        {/* Navigation */}
+        <div className="flex items-center justify-between mb-6 bg-white rounded-2xl border border-[var(--border)] px-4 py-3 sm:px-5 sm:py-4">
+          <button
+            onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}
+            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[var(--background)] transition-colors border border-[var(--border)]"
+          >
+            <ChevronLeft className="w-4 h-4 text-[var(--muted)]" />
+          </button>
+          <div className="text-center">
+            <p className="text-base sm:text-lg font-bold text-[var(--foreground)] capitalize">
+              {format(weekStart, 'MMMM yyyy', { locale: fr })}
+            </p>
+            <p className="text-xs text-[var(--muted)] mt-0.5 flex items-center justify-center gap-2 flex-wrap">
+              {format(weekStart, 'd')} – {format(addDays(weekStart, 6), 'd MMMM', { locale: fr })}
+              {isCurrentWeek && (
+                <button
+                  onClick={toggleView}
+                  className="px-2 py-0.5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] font-medium hover:bg-[var(--primary)] hover:text-white transition-colors"
+                >
+                  Cette semaine
+                </button>
+              )}
+            </p>
+          </div>
+          <button
+            onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}
+            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[var(--background)] transition-colors border border-[var(--border)]"
+          >
+            <ChevronRight className="w-4 h-4 text-[var(--muted)]" />
+          </button>
+        </div>
+
+        {/* Mobile : liste */}
+        <div className="md:hidden flex flex-col gap-4">
+          {weekDays.map((day, i) => {
+            const dayAteliers = getAteliersForDay(day)
+            if (dayAteliers.length === 0) return null
+            const todayDay = isToday(day)
+            return (
+              <div key={day.toISOString()}>
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-bold ${
+                    todayDay ? 'bg-[var(--primary)] text-white' : 'bg-[var(--border)] text-[var(--muted)]'
+                  }`}>
+                    {format(day, 'd')}
+                  </div>
+                  <p className={`text-sm font-semibold capitalize ${todayDay ? 'text-[var(--primary)]' : 'text-[var(--foreground)]'}`}>
+                    {DAY_NAMES_FULL[i]}
+                  </p>
+                </div>
+                <div className="flex flex-col gap-3">{dayAteliers.map(a => atelierCard(a))}</div>
+              </div>
+            )
+          })}
+          {weekDays.every(day => getAteliersForDay(day).length === 0) && (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <p className="text-[var(--muted)] text-sm">Aucun atelier cette semaine</p>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop : grille 7 colonnes */}
+        <div className="hidden md:grid grid-cols-7 gap-3">
+          {weekDays.map((day, i) => {
+            const dayAteliers = getAteliersForDay(day)
+            const todayDay = isToday(day)
+            return (
+              <div key={day.toISOString()} className="flex flex-col gap-2 min-w-0">
+                <div className={`text-center py-3 px-2 rounded-2xl border ${
+                  todayDay ? 'bg-[var(--primary)] border-[var(--primary)]' : 'bg-white border-[var(--border)]'
+                }`}>
+                  <p className={`text-xs font-semibold uppercase tracking-wide ${todayDay ? 'text-white/80' : 'text-[var(--muted)]'}`}>
+                    {DAY_NAMES[i]}
+                  </p>
+                  <p className={`text-xl font-bold mt-0.5 ${todayDay ? 'text-white' : 'text-[var(--foreground)]'}`}>
+                    {format(day, 'd')}
+                  </p>
+                  {dayAteliers.length > 0 && (
+                    <p className={`text-xs mt-0.5 ${todayDay ? 'text-white/70' : 'text-[var(--muted)]'}`}>
+                      {dayAteliers.length} atelier{dayAteliers.length > 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2 flex-1">
+                  {dayAteliers.length === 0 ? (
+                    <div className="flex-1 min-h-[260px] rounded-2xl border-2 border-dashed border-[var(--border)] flex items-center justify-center">
+                      <span className="text-xs text-[var(--muted)] opacity-40">Aucun atelier</span>
+                    </div>
+                  ) : (
+                    dayAteliers.map(a => atelierCard(a))
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {legend}
+      </div>
+    )
+  }
+
+  /* ── VUE MOIS ── */
+  const daysWithAteliers = monthDays.filter(day => getAteliersForDay(day).length > 0)
+
   return (
     <div>
-      {nav}
-
-      {/* Vue mobile : liste par jour */}
-      <div className="md:hidden flex flex-col gap-4">
-        {weekDays.map((day, i) => {
-          const dayAteliers = getAteliersForDay(day)
-          const todayDay = isToday(day)
-          if (dayAteliers.length === 0) return null
-
-          return (
-            <div key={day.toISOString()}>
-              <div className={`flex items-center gap-2 mb-2 px-1`}>
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                  todayDay ? 'bg-[var(--primary)] text-white' : 'bg-[var(--border)] text-[var(--muted)]'
-                }`}>
-                  {format(day, 'd')}
-                </div>
-                <p className={`text-sm font-semibold capitalize ${todayDay ? 'text-[var(--primary)]' : 'text-[var(--foreground)]'}`}>
-                  {DAY_NAMES_FULL[i]}
-                </p>
-              </div>
-              <div className="flex flex-col gap-3">
-                {dayAteliers.map(a => atelierCard(a))}
-              </div>
-            </div>
-          )
-        })}
-
-        {weekDays.every(day => getAteliersForDay(day).length === 0) && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-[var(--muted)] text-sm">Aucun atelier cette semaine</p>
-          </div>
-        )}
+      {/* Navigation */}
+      <div className="flex items-center justify-between mb-6 bg-white rounded-2xl border border-[var(--border)] px-4 py-3 sm:px-5 sm:py-4">
+        <button
+          onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+          className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[var(--background)] transition-colors border border-[var(--border)]"
+        >
+          <ChevronLeft className="w-4 h-4 text-[var(--muted)]" />
+        </button>
+        <div className="text-center">
+          <p className="text-base sm:text-lg font-bold text-[var(--foreground)] capitalize">
+            {format(currentMonth, 'MMMM yyyy', { locale: fr })}
+          </p>
+          <p className="text-xs text-[var(--muted)] mt-0.5 flex items-center justify-center gap-2">
+            {isCurrentMonth && (
+              <button
+                onClick={toggleView}
+                className="px-2 py-0.5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] font-medium hover:bg-[var(--primary)] hover:text-white transition-colors"
+              >
+                Ce mois-ci
+              </button>
+            )}
+            {!isCurrentMonth && (
+              <button
+                onClick={toggleView}
+                className="px-2 py-0.5 rounded-full bg-[var(--border)] text-[var(--muted)] font-medium hover:bg-[var(--primary-light)] hover:text-[var(--primary)] transition-colors"
+              >
+                Vue mois
+              </button>
+            )}
+          </p>
+        </div>
+        <button
+          onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+          className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[var(--background)] transition-colors border border-[var(--border)]"
+        >
+          <ChevronRight className="w-4 h-4 text-[var(--muted)]" />
+        </button>
       </div>
 
-      {/* Vue desktop : grille 7 colonnes */}
-      <div className="hidden md:grid grid-cols-7 gap-3">
-        {weekDays.map((day, i) => {
-          const dayAteliers = getAteliersForDay(day)
-          const todayDay = isToday(day)
-
-          return (
-            <div key={day.toISOString()} className="flex flex-col gap-2 min-w-0">
-              <div className={`text-center py-3 px-2 rounded-2xl border ${
-                todayDay ? 'bg-[var(--primary)] border-[var(--primary)]' : 'bg-white border-[var(--border)]'
-              }`}>
-                <p className={`text-xs font-semibold uppercase tracking-wide ${todayDay ? 'text-white/80' : 'text-[var(--muted)]'}`}>
-                  {DAY_NAMES[i]}
-                </p>
-                <p className={`text-xl font-bold mt-0.5 ${todayDay ? 'text-white' : 'text-[var(--foreground)]'}`}>
-                  {format(day, 'd')}
-                </p>
-                {dayAteliers.length > 0 && (
-                  <p className={`text-xs mt-0.5 ${todayDay ? 'text-white/70' : 'text-[var(--muted)]'}`}>
-                    {dayAteliers.length} atelier{dayAteliers.length > 1 ? 's' : ''}
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-col gap-2 flex-1">
-                {dayAteliers.length === 0 ? (
-                  <div className="flex-1 min-h-[260px] rounded-2xl border-2 border-dashed border-[var(--border)] flex items-center justify-center">
-                    <span className="text-xs text-[var(--muted)] opacity-40">Aucun atelier</span>
+      {/* Liste des jours avec ateliers */}
+      {daysWithAteliers.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="text-[var(--muted)] text-sm">Aucun atelier ce mois-ci</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-6">
+          {daysWithAteliers.map(day => {
+            const dayAteliers = getAteliersForDay(day)
+            const todayDay = isToday(day)
+            const dayIndex = (day.getDay() + 6) % 7
+            return (
+              <div key={day.toISOString()}>
+                <div className="flex items-center gap-2 mb-3 px-1">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-bold ${
+                    todayDay ? 'bg-[var(--primary)] text-white' : 'bg-[var(--border)] text-[var(--muted)]'
+                  }`}>
+                    {format(day, 'd')}
                   </div>
-                ) : (
-                  dayAteliers.map(a => atelierCard(a))
-                )}
+                  <div>
+                    <p className={`text-sm font-semibold capitalize ${todayDay ? 'text-[var(--primary)]' : 'text-[var(--foreground)]'}`}>
+                      {DAY_NAMES_FULL[dayIndex]}
+                    </p>
+                    <p className="text-xs text-[var(--muted)]">
+                      {dayAteliers.length} atelier{dayAteliers.length > 1 ? 's' : ''}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {dayAteliers.map(a => atelierCard(a))}
+                </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      )}
 
       {legend}
     </div>
