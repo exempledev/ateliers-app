@@ -191,25 +191,13 @@ export default function PaymentModal({ atelier, onSuccess, onClose, paypalClient
               </div>
 
               {/* Footer step 2 — bouton PayPal intégré */}
-              <div className="flex items-center justify-between gap-4 px-6 py-4 border-t border-[var(--border)] bg-[var(--background)]">
-                <button
-                  onClick={() => setStep('summary')}
-                  className="flex items-center gap-1 text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors flex-shrink-0"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Retour
-                </button>
-
-                <div className="flex items-center gap-1.5 text-xs text-[var(--muted)] flex-shrink-0">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Sécurisé
-                </div>
-
-                <div className="flex-shrink-0" style={{ minWidth: 170 }}>
+              <div className="flex flex-col gap-3 px-6 py-4 border-t border-[var(--border)] bg-[var(--background)]">
+                {/* Bouton PayPal pleine largeur */}
+                <div className="w-full">
                   {method === 'paypal' && (
                     <PayPalButtons
                       fundingSource="paypal"
-                      style={{ height: 40, shape: 'rect', label: 'pay', tagline: false }}
+                      style={{ height: 44, shape: 'rect', label: 'pay', tagline: false }}
                       createOrder={async () => {
                         const res = await fetch('/api/paypal/create-order', {
                           method: 'POST',
@@ -239,6 +227,21 @@ export default function PaymentModal({ atelier, onSuccess, onClose, paypalClient
                       Bientôt disponible
                     </button>
                   )}
+                </div>
+
+                {/* Retour + Sécurisé */}
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => setStep('summary')}
+                    className="flex items-center gap-1 text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Retour
+                  </button>
+                  <div className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Sécurisé
+                  </div>
                 </div>
               </div>
             </>
