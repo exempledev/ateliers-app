@@ -53,7 +53,7 @@ export default function Navbar() {
 
   const actualitesLink = { href: '/actualites', label: 'Actualités' }
   const bonPlansLink = { href: '/bon-plans', label: 'Bons Plans' }
-  const proutLink = { href: '/prout', label: 'Devenir Animateur/Partenaires' }
+  const proutLink = { href: '/prout', label: 'Nous Rejoindre' }
   const contactLink = { href: '/contact', label: 'Contact' }
 
   const links = role === 'admin'
@@ -118,17 +118,17 @@ export default function Navbar() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <img src="/favicon.ico" alt="Logo" className="w-8 h-8 rounded-xl object-cover" />
-            <span className="font-semibold text-[var(--foreground)] text-sm hidden xl:block">Les Ateliers d'Émergence</span>
+            <span className="font-semibold text-[var(--foreground)]">Les Ateliers d'Émergence</span>
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-0.5">
+          <nav className="hidden md:flex items-center gap-1">
             {loaded && role === 'admin' && (
               <div className="relative" ref={adminRef}>
                 <button
                   onClick={() => { setAdminOpen(o => !o); setAccountOpen(false) }}
                   className={cn(
-                    'flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors',
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                     isAdminSection
                       ? 'bg-[var(--primary-light)] text-[var(--primary)]'
                       : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
@@ -167,7 +167,7 @@ export default function Navbar() {
                 key={href}
                 href={href}
                 className={cn(
-                  'px-2 py-1 rounded-lg text-xs font-medium transition-colors whitespace-nowrap',
+                  'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                   pathname === href
                     ? 'bg-[var(--primary-light)] text-[var(--primary)]'
                     : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
@@ -184,7 +184,7 @@ export default function Navbar() {
               <div className="relative ml-2" ref={accountRef}>
                 <button
                   onClick={() => { setAccountOpen(o => !o); setAdminOpen(false) }}
-                  className="flex items-center gap-1 px-2 py-1 rounded-xl border border-[var(--border)] text-xs font-medium text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
                 >
                   Mon compte
                   <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', accountOpen && 'rotate-180')} />
@@ -206,7 +206,7 @@ export default function Navbar() {
             )}
 
             {loaded && !role && (
-              <Link href="/connexion" className="ml-1 px-3 py-1 rounded-xl bg-[var(--primary)] text-white text-xs font-medium hover:opacity-90 transition-opacity">
+              <Link href="/connexion" className="ml-2 px-4 py-1.5 rounded-xl bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90 transition-opacity">
                 Connexion
               </Link>
             )}
