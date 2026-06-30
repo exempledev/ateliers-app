@@ -38,6 +38,8 @@ export default async function AdminUtilisateursPage() {
           animateurs={animateurs ?? []}
           participants={participants ?? []}
           collaborateurs={collaborateurs ?? []}
+          isSuperAdmin={profile?.is_super_admin ?? false}
+          currentUserId={user.id}
         />
       </main>
     </>

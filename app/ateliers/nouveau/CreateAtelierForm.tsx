@@ -30,7 +30,7 @@ export default function CreateAtelierForm({ profile, animateurs }: Props) {
     theme: 'travail' as Theme,
     location: '',
     animateur_id: isAdmin ? (animateurs[0]?.id ?? profile.id) : profile.id,
-    price: 25,
+    price: 35,
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

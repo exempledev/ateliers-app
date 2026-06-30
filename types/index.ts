@@ -8,6 +8,7 @@ export interface User {
   full_name: string
   role: Role
   is_active: boolean
+  is_super_admin?: boolean
   phone?: string | null
   organisme?: string | null
   created_at: string

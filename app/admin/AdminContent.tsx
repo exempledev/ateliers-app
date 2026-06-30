@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, X, ShieldCheck, Trash2, AlertTriangle } from 'lucide-react'
+import { Check, X, ShieldCheck, Trash2, AlertTriangle, UserPlus, Search, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Card from '@/components/ui/Card'
 import type { User } from '@/types'
@@ -12,12 +12,48 @@ interface Props {
   animateurs: User[]
   participants: User[]
   collaborateurs: User[]
+  isSuperAdmin?: boolean
+  currentUserId?: string
 }
 
-export default function AdminContent({ admins, animateurs, participants, collaborateurs }: Props) {
+export default function AdminContent({ admins, animateurs, participants, collaborateurs, isSuperAdmin = false, currentUserId }: Props) {
   const router = useRouter()
   const supabase = createClient()
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
+
+  // Gestion ajout admin
+  const [showAddAdmin, setShowAddAdmin] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<User[]>([])
+  const [searching, setSearching] = useState(false)
+
+  async function searchUsers(query: string) {
+    setSearchQuery(query)
+    if (query.trim().length < 2) { setSearchResults([]); return }
+    setSearching(true)
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .neq('role', 'admin')
+      .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
+      .limit(8)
+    setSearchResults(data ?? [])
+    setSearching(false)
+  }
+
+  async function promoteToAdmin(userId: string) {
+    await supabase.from('users').update({ role: 'admin' }).eq('id', userId)
+    setShowAddAdmin(false)
+    setSearchQuery('')
+    setSearchResults([])
+    router.refresh()
+  }
+
+  async function demoteAdmin(userId: string) {
+    if (!confirm('Retirer les droits administrateur à cet utilisateur ?')) return
+    await supabase.from('users').update({ role: 'participant' }).eq('id', userId)
+    router.refresh()
+  }
 
   async function toggleActive(user: User) {
     await supabase
@@ -57,13 +93,65 @@ export default function AdminContent({ admins, animateurs, participants, collabo
       <div className="grid grid-cols-1 gap-6">
         {/* Administrateurs */}
         <Card className="p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="font-semibold text-[var(--foreground)] leading-none">Administrateurs ({admins.length})</h2>
-            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-600 leading-none">
-              <ShieldCheck className="w-3 h-3 shrink-0" />
-              Sécurisé
-            </span>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <h2 className="font-semibold text-[var(--foreground)] leading-none">Administrateurs ({admins.length})</h2>
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-600 leading-none">
+                <ShieldCheck className="w-3 h-3 shrink-0" />
+                Sécurisé
+              </span>
+            </div>
+            {isSuperAdmin && (
+              <button
+                onClick={() => setShowAddAdmin(o => !o)}
+                className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg bg-[var(--primary-light)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-colors"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                Ajouter
+              </button>
+            )}
           </div>
+
+          {/* Recherche ajout admin */}
+          {isSuperAdmin && showAddAdmin && (
+            <div className="mb-4 p-3 rounded-xl bg-[var(--background)] border border-[var(--border)]">
+              <div className="relative mb-2">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--muted)]" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => searchUsers(e.target.value)}
+                  placeholder="Rechercher un utilisateur..."
+                  autoFocus
+                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-[var(--border)] text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition"
+                />
+                {searching && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--muted)] animate-spin" />}
+              </div>
+              {searchResults.length > 0 && (
+                <div className="rounded-xl border border-[var(--border)] overflow-hidden bg-white">
+                  {searchResults.map(u => (
+                    <div key={u.id} className="flex items-center gap-3 px-3 py-2.5 border-b border-[var(--border)] last:border-0">
+                      <div className="w-7 h-7 rounded-full bg-[var(--primary-light)] flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-semibold text-[var(--primary)]">{u.full_name.charAt(0).toUpperCase()}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-[var(--foreground)] truncate">{u.full_name}</p>
+                        <p className="text-xs text-[var(--muted)] truncate">{u.email}</p>
+                      </div>
+                      <button
+                        onClick={() => promoteToAdmin(u.id)}
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg bg-[var(--primary-light)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-colors flex-shrink-0"
+                      >
+                        <UserPlus className="w-3 h-3" />
+                        Promouvoir
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex flex-col gap-1">
             {admins.length === 0 ? (
               <p className="text-sm text-[var(--muted)]">Aucun administrateur.</p>
@@ -74,10 +162,23 @@ export default function AdminContent({ admins, animateurs, participants, collabo
                     <span className="text-xs font-semibold text-[var(--accent)]">{u.full_name.charAt(0).toUpperCase()}</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--foreground)] truncate">{u.full_name}</p>
+                    <p className="text-sm font-medium text-[var(--foreground)] truncate flex items-center gap-1.5">
+                      {u.full_name}
+                      {u.is_super_admin && (
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-green-50 text-green-600">Principal</span>
+                      )}
+                    </p>
                     <p className="text-xs text-[var(--muted)] truncate">{u.email}</p>
                   </div>
-                  <DeleteButton user={u} onDelete={setUserToDelete} />
+                  {isSuperAdmin && !u.is_super_admin && u.id !== currentUserId && (
+                    <button
+                      onClick={() => demoteAdmin(u.id)}
+                      className="p-1.5 rounded-lg text-[var(--muted)] hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0"
+                      title="Retirer admin"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               ))
             )}
