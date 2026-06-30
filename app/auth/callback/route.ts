@@ -8,7 +8,22 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = await createClient()
-    await supabase.auth.exchangeCodeForSession(code)
+    const { data: { session } } = await supabase.auth.exchangeCodeForSession(code)
+
+    // Synchronise le profil public avec les métadonnées auth (organisme, role, phone)
+    if (session?.user) {
+      const meta = session.user.user_metadata ?? {}
+      const updates: Record<string, string | null> = {}
+
+      if (meta.organisme !== undefined) updates.organisme = meta.organisme ?? null
+      if (meta.role) updates.role = meta.role
+      if (meta.phone !== undefined) updates.phone = meta.phone ?? null
+      if (meta.full_name) updates.full_name = meta.full_name
+
+      if (Object.keys(updates).length > 0) {
+        await supabase.from('users').update(updates).eq('id', session.user.id)
+      }
+    }
   }
 
   return NextResponse.redirect(`${origin}${next}`)
