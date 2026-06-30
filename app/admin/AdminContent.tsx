@@ -53,7 +53,7 @@ export default function AdminContent({ admins, animateurs, participants, collabo
   async function exportEmails() {
     const { data } = await supabase.from('users').select('email').order('email')
     if (!data) return
-    const emails = data.map(u => u.email).join(' ')
+    const emails = data.map(u => u.email).join('\n')
     const blob = new Blob([emails], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
