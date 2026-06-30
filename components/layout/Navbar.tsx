@@ -53,7 +53,7 @@ export default function Navbar() {
 
   const actualitesLink = { href: '/actualites', label: 'Actualités' }
   const bonPlansLink = { href: '/bon-plans', label: 'Bons Plans' }
-  const proutLink = { href: '/prout', label: 'PROUT' }
+  const proutLink = { href: '/prout', label: 'Devenir Animateur/Partenaires' }
   const contactLink = { href: '/contact', label: 'Contact' }
 
   const links = role === 'admin'
