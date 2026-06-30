@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Pencil, Check, X, CheckCircle2 } from 'lucide-react'
+import { Pencil, Check, X, CheckCircle2, KeyRound } from 'lucide-react'
 
 interface Props {
   currentEmail: string
@@ -29,6 +29,12 @@ export default function AccountForm({ currentEmail, currentName, currentPhone, c
   const [editingBio, setEditingBio] = useState(false)
   const [bioDraft, setBioDraft] = useState('')
   const [bioLoading, setBioLoading] = useState(false)
+
+  const [editingPassword, setEditingPassword] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordLoading, setPasswordLoading] = useState(false)
+  const [passwordMessage, setPasswordMessage] = useState<{ text: string; ok: boolean } | null>(null)
 
   const [organisme, setOrganisme] = useState(currentOrganisme ?? '')
   const [editingOrganisme, setEditingOrganisme] = useState(false)
@@ -62,6 +68,29 @@ export default function AccountForm({ currentEmail, currentName, currentPhone, c
     } else {
       setSuggestions([])
       setShowSuggestions(false)
+    }
+  }
+
+  async function savePassword() {
+    setPasswordMessage(null)
+    if (newPassword.length < 6) {
+      setPasswordMessage({ text: 'Le mot de passe doit contenir au moins 6 caractères.', ok: false })
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage({ text: 'Les mots de passe ne correspondent pas.', ok: false })
+      return
+    }
+    setPasswordLoading(true)
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    setPasswordLoading(false)
+    if (error) {
+      setPasswordMessage({ text: error.message, ok: false })
+    } else {
+      setPasswordMessage({ text: 'Mot de passe mis à jour avec succès.', ok: true })
+      setNewPassword('')
+      setConfirmPassword('')
+      setEditingPassword(false)
     }
   }
 
@@ -321,6 +350,68 @@ export default function AccountForm({ currentEmail, currentName, currentPhone, c
         {message && (
           <p className={`text-xs px-3 py-2 rounded-xl mt-3 ${message.ok ? 'bg-[var(--primary-light)] text-[var(--primary)]' : 'bg-red-50 text-red-600'}`}>
             {message.text}
+          </p>
+        )}
+      </div>
+
+      {/* Mot de passe */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="font-semibold text-[var(--foreground)] text-sm">Mot de passe</h2>
+          {!editingPassword && (
+            <button
+              onClick={() => { setEditingPassword(true); setPasswordMessage(null) }}
+              className="p-1.5 rounded-lg hover:bg-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+        {editingPassword ? (
+          <div className="flex flex-col gap-2">
+            <input
+              type="password"
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              placeholder="Nouveau mot de passe"
+              autoFocus
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition"
+            />
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              placeholder="Confirmer le mot de passe"
+              onKeyDown={e => e.key === 'Enter' && savePassword()}
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition"
+            />
+            {passwordMessage && (
+              <p className={`text-xs px-3 py-2 rounded-xl ${passwordMessage.ok ? 'bg-[var(--primary-light)] text-[var(--primary)]' : 'bg-red-50 text-red-600'}`}>
+                {passwordMessage.text}
+              </p>
+            )}
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => { setEditingPassword(false); setNewPassword(''); setConfirmPassword(''); setPasswordMessage(null) }}
+                className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs font-medium text-[var(--muted)] hover:bg-[var(--background)] transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={savePassword}
+                disabled={passwordLoading}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--primary)] text-white text-xs font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+              >
+                {passwordLoading
+                  ? <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  : <><Check className="w-3.5 h-3.5" /> Enregistrer</>}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-[var(--muted)] flex items-center gap-2">
+            <KeyRound className="w-3.5 h-3.5" />
+            ••••••••
           </p>
         )}
       </div>
