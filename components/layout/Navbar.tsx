@@ -115,14 +115,14 @@ export default function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-[var(--border)]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <img src="/favicon.ico" alt="Logo" className="w-8 h-8 rounded-xl object-cover" />
             <span className="font-semibold text-[var(--foreground)]">Les Ateliers d'Émergence</span>
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1">
             {loaded && role === 'admin' && (
               <div className="relative" ref={adminRef}>
                 <button
@@ -215,7 +215,7 @@ export default function Navbar() {
           {/* Hamburger mobile */}
           <button
             onClick={() => setMobileOpen(o => !o)}
-            className="md:hidden p-2 rounded-xl hover:bg-[var(--border)] text-[var(--foreground)] transition-colors"
+            className="lg:hidden p-2 rounded-xl hover:bg-[var(--border)] text-[var(--foreground)] transition-colors"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -224,7 +224,7 @@ export default function Navbar() {
 
       {/* Menu mobile */}
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 top-16 z-40 bg-white overflow-y-auto">
+        <div className="lg:hidden fixed inset-0 top-16 z-40 bg-white overflow-y-auto">
           <div className="flex flex-col px-4 py-4 gap-1">
 
             {/* Admin section */}
