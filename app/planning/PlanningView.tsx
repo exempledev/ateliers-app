@@ -13,11 +13,12 @@ interface Props {
   isLoggedIn: boolean
   userRole: string | null
   userId: string | null
+  paypalClientId: string
 }
 
 const DAY_NAMES = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 
-export default function PlanningView({ ateliers, userReservations, isLoggedIn, userRole, userId }: Props) {
+export default function PlanningView({ ateliers, userReservations, isLoggedIn, userRole, userId, paypalClientId }: Props) {
   const [currentWeek, setCurrentWeek] = useState(new Date())
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 })
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
@@ -110,6 +111,7 @@ export default function PlanningView({ ateliers, userReservations, isLoggedIn, u
                         userRole === 'admin' ||
                         (userRole === 'animateur' && atelier.animateur_id === userId)
                       }
+                      paypalClientId={paypalClientId}
                     />
                   ))
                 )}

@@ -18,7 +18,7 @@ export default function ForgotPasswordForm() {
     setLoading(true)
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/reinitialiser-mot-de-passe`,
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin}/auth/callback?next=/reinitialiser-mot-de-passe`,
     })
 
     setLoading(false)

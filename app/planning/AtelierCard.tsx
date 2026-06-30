@@ -26,9 +26,10 @@ interface Props {
   canViewParticipants?: boolean
   canEdit?: boolean
   canDelete?: boolean
+  paypalClientId?: string
 }
 
-export default function AtelierCard({ atelier, isReserved, isLoggedIn, userRole, canViewParticipants, canEdit, canDelete }: Props) {
+export default function AtelierCard({ atelier, isReserved, isLoggedIn, userRole, canViewParticipants, canEdit, canDelete, paypalClientId = '' }: Props) {
   const [reserved, setReserved] = useState(isReserved)
   const [loading, setLoading] = useState(false)
   const [showParticipants, setShowParticipants] = useState(false)
@@ -325,6 +326,7 @@ export default function AtelierCard({ atelier, isReserved, isLoggedIn, userRole,
           atelier={{ ...atelier, price }}
           onSuccess={handlePaymentSuccess}
           onClose={() => setShowPayment(false)}
+          paypalClientId={paypalClientId}
         />
       )}
     </>

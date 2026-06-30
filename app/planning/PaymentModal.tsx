@@ -20,6 +20,7 @@ interface Props {
   atelier: AtelierForPayment
   onSuccess: () => void
   onClose: () => void
+  paypalClientId: string
 }
 
 type Step = 'summary' | 'payment'
@@ -31,7 +32,7 @@ const PaypalLogo = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export default function PaymentModal({ atelier, onSuccess, onClose }: Props) {
+export default function PaymentModal({ atelier, onSuccess, onClose, paypalClientId }: Props) {
   const [step, setStep] = useState<Step>('summary')
   const [method, setMethod] = useState<Method>('paypal')
 
@@ -44,7 +45,7 @@ export default function PaymentModal({ atelier, onSuccess, onClose }: Props) {
   })()
 
   return (
-    <PayPalScriptProvider options={{ clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? '', currency: 'EUR', locale: 'fr_FR' }}>
+    <PayPalScriptProvider options={{ clientId: paypalClientId, currency: 'EUR', locale: 'fr_FR' }}>
       <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div className="animate-slide-up bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
 
