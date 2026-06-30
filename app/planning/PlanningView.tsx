@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isToday, parseISO, isSameWeek, startOfMonth, endOfMonth, addMonths, subMonths, isSameMonth, eachDayOfInterval } from 'date-fns'
+import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isToday, parseISO, isSameWeek, startOfMonth, endOfMonth, addMonths, subMonths, isSameMonth, eachDayOfInterval, getWeek } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import AtelierCard from './AtelierCard'
@@ -33,6 +33,15 @@ export default function PlanningView({ ateliers, userReservations, isLoggedIn, u
   const monthEnd = endOfMonth(currentMonth)
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd })
   const isCurrentMonth = isSameMonth(currentMonth, new Date())
+
+  // Calcul des semaines du mois
+  const firstWeekStart = startOfWeek(monthStart, { weekStartsOn: 1 })
+  const weeks: Date[][] = []
+  let weekStart2 = firstWeekStart
+  while (weekStart2 <= monthEnd) {
+    weeks.push(Array.from({ length: 7 }, (_, i) => addDays(weekStart2, i)))
+    weekStart2 = addDays(weekStart2, 7)
+  }
 
   const getAteliersForDay = (day: Date) =>
     ateliers.filter(a => isSameDay(parseISO(a.date), day))
@@ -220,51 +229,46 @@ export default function PlanningView({ ateliers, userReservations, isLoggedIn, u
         </button>
       </div>
 
-      {/* Tous les jours du mois */}
-      <div className="flex flex-col gap-3">
-        {monthDays.map(day => {
-          const dayAteliers = getAteliersForDay(day)
-          const todayDay = isToday(day)
-          const dayIndex = (day.getDay() + 6) % 7
+      {/* Grille mensuelle — même format que la vue semaine */}
+      <div className="flex flex-col gap-6">
+        {weeks.map((week, wi) => (
+          <div key={wi} className="grid grid-cols-7 gap-3">
+            {week.map((day, i) => {
+              const dayAteliers = getAteliersForDay(day)
+              const todayDay = isToday(day)
+              const inMonth = isSameMonth(day, currentMonth)
 
-          return (
-            <div key={day.toISOString()} className={`rounded-2xl border overflow-hidden ${
-              todayDay ? 'border-[var(--primary)]' : 'border-[var(--border)]'
-            }`}>
-              {/* En-tête du jour */}
-              <div className={`flex items-center gap-3 px-4 py-3 ${
-                todayDay ? 'bg-[var(--primary)]' : 'bg-white'
-              }`}>
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm font-bold ${
-                  todayDay ? 'bg-white/20 text-white' : 'bg-[var(--border)] text-[var(--muted)]'
-                }`}>
-                  {format(day, 'd')}
-                </div>
-                <div className="flex-1">
-                  <p className={`text-sm font-semibold capitalize ${todayDay ? 'text-white' : 'text-[var(--foreground)]'}`}>
-                    {DAY_NAMES_FULL[dayIndex]}
-                  </p>
-                  {dayAteliers.length > 0 && (
-                    <p className={`text-xs ${todayDay ? 'text-white/70' : 'text-[var(--muted)]'}`}>
-                      {dayAteliers.length} atelier{dayAteliers.length > 1 ? 's' : ''}
+              return (
+                <div key={day.toISOString()} className={`flex flex-col gap-2 min-w-0 ${!inMonth ? 'opacity-30' : ''}`}>
+                  <div className={`text-center py-3 px-2 rounded-2xl border ${
+                    todayDay ? 'bg-[var(--primary)] border-[var(--primary)]' : 'bg-white border-[var(--border)]'
+                  }`}>
+                    <p className={`text-xs font-semibold uppercase tracking-wide ${todayDay ? 'text-white/80' : 'text-[var(--muted)]'}`}>
+                      {DAY_NAMES[i]}
                     </p>
-                  )}
+                    <p className={`text-xl font-bold mt-0.5 ${todayDay ? 'text-white' : 'text-[var(--foreground)]'}`}>
+                      {format(day, 'd')}
+                    </p>
+                    {dayAteliers.length > 0 && (
+                      <p className={`text-xs mt-0.5 ${todayDay ? 'text-white/70' : 'text-[var(--muted)]'}`}>
+                        {dayAteliers.length} atelier{dayAteliers.length > 1 ? 's' : ''}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2 flex-1">
+                    {dayAteliers.length === 0 ? (
+                      <div className="flex-1 min-h-[260px] rounded-2xl border-2 border-dashed border-[var(--border)] flex items-center justify-center">
+                        <span className="text-xs text-[var(--muted)] opacity-40">Aucun atelier</span>
+                      </div>
+                    ) : (
+                      dayAteliers.map(a => atelierCard(a))
+                    )}
+                  </div>
                 </div>
-              </div>
-
-              {/* Ateliers ou vide */}
-              {dayAteliers.length > 0 ? (
-                <div className="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 bg-[var(--background)]">
-                  {dayAteliers.map(a => atelierCard(a))}
-                </div>
-              ) : (
-                <div className="px-4 py-3 bg-[var(--background)]">
-                  <p className="text-xs text-[var(--muted)] opacity-50">Aucun atelier</p>
-                </div>
-              )}
-            </div>
-          )
-        })}
+              )
+            })}
+          </div>
+        ))}
       </div>
 
       {legend}
