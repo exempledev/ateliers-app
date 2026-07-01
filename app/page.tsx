@@ -43,7 +43,7 @@ export default function HomePage() {
               >
                 Des ateliers pour
                 <br />
-                <span className="text-[var(--primary)]">mieux travailler & souffler</span>
+                <span className="text-[var(--primary)]">apprendre, expérimenter et réussir</span>
               </motion.h1>
 
               <motion.p
