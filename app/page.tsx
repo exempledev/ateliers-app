@@ -123,10 +123,10 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">Ateliers Ludique</h3>
               <p className="text-sm text-[var(--muted)] leading-relaxed mb-5">
-                Relaxation, pleine conscience, cohésion d'équipe — pour recharger les batteries et cultiver le bien-être au travail.
+                Relaxation, Organisation, cohésion d'équipe, image de soi — pour recharger les batteries et cultiver le bien-être au travail.
               </p>
               <div className="flex flex-wrap gap-2">
-                {['Méditation', 'Team building', 'Yoga', 'Pleine conscience'].map(tag => (
+                {['Yoga', 'Décoration', 'Prise de photos', 'Bien être'].map(tag => (
                   <span key={tag} className="px-2.5 py-1 text-xs rounded-full bg-white text-[var(--detente)] font-medium">
                     {tag}
                   </span>
