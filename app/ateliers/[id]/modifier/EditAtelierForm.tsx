@@ -126,7 +126,7 @@ export default function EditAtelierForm({ atelier, profile, animateurs }: Props)
               <label className="text-sm font-medium text-[var(--foreground)]">Thème <span className="text-red-400">*</span></label>
               <select className={inputClass} value={form.theme} onChange={e => set('theme', e.target.value)}>
                 <option value="travail">Professionnel</option>
-                <option value="detente">Détente</option>
+                <option value="detente">Ludique</option>
               </select>
             </div>
             <div className="flex flex-col gap-1.5">

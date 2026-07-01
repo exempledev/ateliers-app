@@ -34,7 +34,7 @@ export default function CGUPage() {
         <Section title="Article 2 — Définitions">
           <div className="flex flex-col gap-2">
             <Def term="Éditeur" def="La SARL PASCAL CHARBONNIER, responsable du site Les Ateliers d'Émergence." />
-            <Def term="Service" def="La plateforme de réservation d'ateliers professionnels et détente accessible via le site." />
+            <Def term="Service" def="La plateforme de réservation d'ateliers professionnels et ludiques accessible via le site." />
             <Def term="Utilisateur" def="Toute personne physique disposant d'un compte créé sur le site (collaborateur, animateur ou administrateur)." />
             <Def term="Compte" def="Espace personnel créé lors de l'inscription, donnant accès aux fonctionnalités du service selon le rôle attribué." />
             <Def term="Atelier" def="Session de formation ou de bien-être organisée par l'Éditeur ou un animateur partenaire, réservable via la plateforme." />

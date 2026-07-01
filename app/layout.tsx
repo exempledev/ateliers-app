@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: "Les Ateliers d'Émergence",
-  description: 'Réservez vos ateliers travail & détente',
+  description: 'Réservez vos ateliers travail & ludique',
   icons: {
     icon: '/icon.png',
     shortcut: '/icon.png',

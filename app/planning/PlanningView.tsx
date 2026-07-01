@@ -76,7 +76,7 @@ export default function PlanningView({ ateliers, userReservations, isLoggedIn, u
       </div>
       <div className="flex items-center gap-2">
         <span className="w-3 h-3 rounded-full bg-[var(--detente)]" />
-        <span className="text-xs text-[var(--muted)]">Atelier Détente</span>
+        <span className="text-xs text-[var(--muted)]">Atelier Ludique</span>
       </div>
       <div className="flex items-center gap-2">
         <span className="w-3 h-3 rounded-full bg-[var(--accent)]" />

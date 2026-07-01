@@ -58,7 +58,7 @@ export default function ParticipantsModal({ atelier, onClose }: Props) {
                 ? 'bg-[var(--travail-light)] text-[var(--travail)]'
                 : 'bg-[var(--detente-light)] text-[var(--detente)]'
             }`}>
-              {isTravail ? 'Professionnel' : 'Détente'}
+              {isTravail ? 'Professionnel' : 'Ludique'}
             </span>
             <h2 className="font-semibold text-[var(--foreground)] text-sm leading-snug">{atelier.title}</h2>
             <p className="text-xs text-[var(--muted)] mt-0.5">

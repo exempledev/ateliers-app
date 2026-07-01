@@ -85,7 +85,7 @@ export default function PaymentModal({ atelier, onSuccess, onClose }: Props) {
                 <div className="h-1" style={{ background: themeColor }} />
                 <div className="p-4">
                   <span className="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full text-white mb-2" style={{ background: themeColor }}>
-                    {isTravail ? 'Professionnel' : 'Détente'}
+                    {isTravail ? 'Professionnel' : 'Ludique'}
                   </span>
                   <h3 className="font-bold text-[var(--foreground)] mb-3">{atelier.title}</h3>
                   <div className="flex flex-col gap-2">

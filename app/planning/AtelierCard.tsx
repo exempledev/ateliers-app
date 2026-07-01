@@ -169,7 +169,7 @@ export default function AtelierCard({ atelier, isReserved, isLoggedIn, userRole,
               ? 'bg-[var(--travail-light)] text-[var(--travail)]'
               : 'bg-[var(--detente-light)] text-[var(--detente)]'
           }`}>
-            {isTravail ? 'Professionnel' : 'Détente'}
+            {isTravail ? 'Professionnel' : 'Ludique'}
           </span>
 
           <p className="text-sm font-bold text-[var(--foreground)] leading-snug">{atelier.title}</p>
