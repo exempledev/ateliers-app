@@ -208,7 +208,12 @@ export default function HomePage() {
               <img src="/favicon.ico" alt="Logo" className="w-6 h-6 rounded-lg object-cover" />
               <span className="text-sm font-medium text-[var(--foreground)]">Les Ateliers d'Émergence</span>
             </div>
-            <p className="text-xs text-[var(--muted)]">© 2025 Les Ateliers d'Émergence · Tous droits réservés.</p>
+            <div className="flex items-center gap-4">
+              <Link href="/cgv" className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors underline underline-offset-2">
+                CGV
+              </Link>
+              <p className="text-xs text-[var(--muted)]">© 2025 Les Ateliers d'Émergence · Tous droits réservés.</p>
+            </div>
           </div>
         </footer>
 
