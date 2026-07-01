@@ -164,14 +164,23 @@ export default function CGVPage() {
 
         <Section title="Article 10 — Paiement">
           <p>
-            Le paiement est exigible immédiatement à la commande. Le Client peut effectuer le règlement par carte de paiement.
+            Le paiement est exigible immédiatement à la commande. Le Client peut effectuer le règlement par carte de
+            paiement ou via <strong className="text-[var(--foreground)]">PayPal</strong>.
             Les cartes émises par des banques domiciliées hors de France doivent être des cartes bancaires internationales
             (Mastercard ou Visa).
           </p>
           <p className="mt-3">
-            Le paiement sécurisé en ligne est réalisé par notre prestataire de paiement — les informations transmises sont
-            chiffrées et ne peuvent être lues au cours du transport. Conformément au Code monétaire et financier, l'engagement
-            de payer par carte est irrévocable. En cas d'impossibilité de débit, la vente est immédiatement résolue et la
+            Le paiement sécurisé en ligne par carte bancaire ou PayPal est réalisé par notre prestataire de paiement
+            PayPal (PayPal Holdings, Inc.) — les informations transmises sont chiffrées et ne peuvent être lues au cours
+            du transport sur le réseau. En utilisant PayPal, le Client est soumis aux{' '}
+            <a href="https://www.paypal.com/fr/webapps/mpp/ua/useragreement-full" target="_blank" rel="noopener noreferrer"
+              className="text-[var(--primary)] hover:underline">
+              conditions d'utilisation de PayPal
+            </a>.
+          </p>
+          <p className="mt-3">
+            Conformément au Code monétaire et financier, l'engagement de payer donné par carte est irrévocable.
+            En cas d'erreur ou d'impossibilité de débit, la vente est immédiatement résolue de plein droit et la
             commande annulée.
           </p>
         </Section>
