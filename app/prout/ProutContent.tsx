@@ -16,6 +16,7 @@ export default function ProutContent() {
   }
 
   return (
+    <div className="flex flex-col gap-4">
       {/* Formulaire Entreprise */}
       <div className="bg-white rounded-2xl border border-[var(--border)] overflow-hidden">
         <button
@@ -41,10 +42,7 @@ export default function ProutContent() {
           </div>
         )}
       </div>
-        )}
-      </div>
 
- <div className="flex flex-col gap-4">
       {/* Formulaire Animateur */}
       <div className="bg-white rounded-2xl border border-[var(--border)] overflow-hidden">
         <button
@@ -56,7 +54,7 @@ export default function ProutContent() {
               <UserCheck className="w-5 h-5 text-[var(--primary)]" />
             </div>
             <div>
-              <p className="font-bold text-[var(--foreground)]">Devenir animateur d'ateliers</p>
+              <p className="font-bold text-[var(--forezzground)]">Devenir animateur d'ateliers</p>
               <p className="text-xs text-[var(--muted)] mt-0.5">Proposez vos compétences et animez des ateliers</p>
             </div>
           </div>
@@ -68,6 +66,7 @@ export default function ProutContent() {
           <div className="border-t border-[var(--border)] px-6 pb-6 pt-5">
             <AnimateurForm />
           </div>
+        )}
       </div>
     </div>
   )
