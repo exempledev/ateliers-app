@@ -16,33 +16,6 @@ export default function ProutContent() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Formulaire Animateur */}
-      <div className="bg-white rounded-2xl border border-[var(--border)] overflow-hidden">
-        <button
-          onClick={() => toggle('animateur')}
-          className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[var(--background)] transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[var(--primary-light)] flex items-center justify-center flex-shrink-0">
-              <UserCheck className="w-5 h-5 text-[var(--primary)]" />
-            </div>
-            <div>
-              <p className="font-bold text-[var(--foreground)]">Devenir animateur d'ateliers</p>
-              <p className="text-xs text-[var(--muted)] mt-0.5">Proposez vos compétences et animez des ateliers</p>
-            </div>
-          </div>
-          {openForm === 'animateur'
-            ? <ChevronUp className="w-4 h-4 text-[var(--muted)] flex-shrink-0" />
-            : <ChevronDown className="w-4 h-4 text-[var(--muted)] flex-shrink-0" />}
-        </button>
-        {openForm === 'animateur' && (
-          <div className="border-t border-[var(--border)] px-6 pb-6 pt-5">
-            <AnimateurForm />
-          </div>
-        )}
-      </div>
-
       {/* Formulaire Entreprise */}
       <div className="bg-white rounded-2xl border border-[var(--border)] overflow-hidden">
         <button
@@ -67,6 +40,34 @@ export default function ProutContent() {
             <EntrepriseForm />
           </div>
         )}
+      </div>
+        )}
+      </div>
+
+ <div className="flex flex-col gap-4">
+      {/* Formulaire Animateur */}
+      <div className="bg-white rounded-2xl border border-[var(--border)] overflow-hidden">
+        <button
+          onClick={() => toggle('animateur')}
+          className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[var(--background)] transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[var(--primary-light)] flex items-center justify-center flex-shrink-0">
+              <UserCheck className="w-5 h-5 text-[var(--primary)]" />
+            </div>
+            <div>
+              <p className="font-bold text-[var(--foreground)]">Devenir animateur d'ateliers</p>
+              <p className="text-xs text-[var(--muted)] mt-0.5">Proposez vos compétences et animez des ateliers</p>
+            </div>
+          </div>
+          {openForm === 'animateur'
+            ? <ChevronUp className="w-4 h-4 text-[var(--muted)] flex-shrink-0" />
+            : <ChevronDown className="w-4 h-4 text-[var(--muted)] flex-shrink-0" />}
+        </button>
+        {openForm === 'animateur' && (
+          <div className="border-t border-[var(--border)] px-6 pb-6 pt-5">
+            <AnimateurForm />
+          </div>
       </div>
     </div>
   )
